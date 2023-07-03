@@ -1,0 +1,94 @@
+#lyric {
+    position: absolute;
+    left: 0;
+    top: calc(100% - 80px);
+    background-color: #f5f5f5;
+    height: calc(100% - 60px - 80px);
+    width: 100%;
+    display: inline-flex;
+    overflow: hidden;
+    z-index: 2;
+    transition: all .2s;
+}
+
+#lyric_left {
+    position: relative;
+    height: 100%;
+    flex: 3;
+}
+#lyric_left_m {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+}
+#lyric_left_m_pic {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid #bbb;
+    box-shadow: 0 10px 20px rgba(0 0 0 / .1);
+    background-color: #fff;
+}
+#lyric_left_m_t {
+    margin: 16px 0 8px 0;
+    font-size: 34px;
+}
+#lyric_left_m_a {
+    font-size: 17px;
+}
+
+#lyric_right {
+    position: relative;
+    height: 100%;
+    flex: 4;
+}
+#lyric_right_c {
+    width: calc(100% - 50px);
+    height: calc(100% - 100px);
+    margin: 50px 40px 50px 10px;
+    overflow-y: scroll;
+}
+#lyric_right_c .lrc {
+    font-size: 20px;
+    width: fit-content;
+    padding: 12px 18px;
+    border-radius: 6px;
+}
+#lyric_right_c .lrc:hover {
+    background-color: rgba(0 0 0 / .1);
+}
+#lyric_right_c .lrc:active {
+    background-color: rgba(0 0 0 / .15);
+}
+#lyric_right_c .lrc:first-child {
+    margin-top: calc((100vh - 60px - 80px - 100px) * 0.25);
+}
+#lyric_right_c .lrc:last-child {
+    margin-bottom: calc((100vh - 60px - 80px - 100px) * 0.75 - 70px);
+}
+#lyric_right_c .lrc-focused {
+    background: var(--theme-color);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 34px;
+    font-weight: bolder;
+}
+
+#lyric_right_mask1, #lyric_right_mask2 {
+    position: absolute;
+    left: 10px;
+    width: calc(100% - 50px - 6px);
+    pointer-events: none;
+}
+#lyric_right_mask1 {
+    top: 50px;
+    height: calc((100vh - 60px - 80px - 100px) * 0.25);
+    background: linear-gradient(0deg, transparent, #F5F5F5);
+}
+#lyric_right_mask2 {
+    bottom: 50px;
+    height: calc((100vh - 60px - 80px - 100px) * 0.75 - 140px);
+    background: linear-gradient(180deg, transparent, #F5F5F5);
+}

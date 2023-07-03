@@ -1,0 +1,41 @@
+.loading {
+    width: 50px;
+    height: 50px;
+}
+.loading .circle1 {
+    stroke: rgb(0 0 0 / .12);
+    fill: none;
+    stroke-width: 2px;
+}
+.loading .circle2 {
+    animation: spin-infinite 2s linear infinite;
+    stroke: #0078d4;
+    fill: none;
+    stroke-width: 2px;
+    stroke-linecap: round;
+    transform-origin: 50% 50%;
+}
+@keyframes spin-infinite {
+    0% {
+        stroke-dasharray: 0.01px 43.97px;
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(450deg);
+        stroke-dasharray: 21.99px 21.99px;
+    }
+    100% {
+        stroke-dasharray: .01px 43.97px;
+        transform: rotate(1080deg);
+    }
+}
+
+.num {
+    position: relative;
+}
+.num .loading {
+    position: absolute;
+    transform: scale(.4) translate(-50%, -50%);
+    left: calc(50% - 14px);
+    top: calc(50% - 15px);
+}

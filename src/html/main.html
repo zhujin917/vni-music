@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src *; img-src 'self' data: base64; style-src 'self' 'unsafe-inline'; script-src 'self';">
+    <link rel="stylesheet" type="text/css" href="../ui/style.css">
+    <script type="text/javascript" src="../ui/script.js"></script>
+    <title>维念音乐</title>
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/main/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/main/lyric.css">
+    <script type="text/javascript" src="../js/script.js"></script>
+    <script type="text/javascript" src="../js/main/script.js"></script>
+    <script type="text/javascript" src="../js/main/songlist.js"></script>
+    <script type="text/javascript" src="../js/main/player.js" defer></script>
+    <script type="text/javascript" src="../js/main/lyrics.js" defer></script>
+    <script type="text/javascript" src="../js/main/shortkeys.js" defer></script>
+</head>
+
+<body>
+    <!--标题栏-->
+    <div id="title">
+        <img id="title_logo" src="../img/logo.png" />
+        <div id="title_text">维念音乐</div>
+        <div id="title_buttons">
+            <div id="title_buttons_donate">Donate</div>
+            <button id="title_buttons_simpmode">
+                <img src="../img/icon/off-screen-two.svg" />
+            </button>
+        </div>
+    </div>
+    <!--播放器-->
+    <div id="player">
+        <div id="player_left">
+            <img id="player_left_pic" src="../img/icon/music.svg" />
+            <div id="player_left_pic_mask">
+                <img src="../img/icon/up.svg" />
+            </div>
+            <div id="player_left_song"></div>
+            <div id="player_left_singer"></div>
+        </div>
+        <div id="player_center">
+            <button id="player_center_mode">
+                <img src="../img/icon/loop-once.svg">
+            </button>
+            <button id="player_center_previous">
+                <img src="../img/icon/go-start.svg">
+            </button>
+            <button id="player_center_play">
+                <img src="../img/icon/play-one.svg">
+            </button>
+            <button id="player_center_next">
+                <img src="../img/icon/go-end.svg">
+            </button>
+            <button id="player_center_lyric">词</button>
+            <div id="player_center_progress">
+                <div id="player_center_progress_l">00:00</div>
+                <div id="player_center_progress_r">00:00</div>
+                <div id="player_center_progress_i"></div>
+                <div id="player_center_progress_c"></div>
+            </div>
+            <div id="player_center_mask"></div>
+        </div>
+        <div id="player_right">
+            <button id="player_right_list">
+                <img src="../img/icon/music-list.svg" />
+            </button>
+        </div>
+        <audio id="player_audio"></audio>
+    </div>
+    <!--播放列表-->
+    <div id="playlist">
+        <div id="playlist_title">播放列表</div>
+        <div id="playlist_num">共 0 首</div>
+        <button id="playlist_clear" class="ui-btn">移除全部</button>
+        <div id="playlist_top">
+            <div class="content num"></div>
+            <div class="content title">标题</div>
+            <div class="content artist">艺术家</div>
+            <div class="content time">时长</div>
+        </div>
+        <div id="playlist_content"></div>
+    </div>
+    <!--歌词页-->
+    <div id="lyric">
+        <div id="lyric_left">
+            <div id="lyric_left_m">
+                <img id="lyric_left_m_pic" />
+                <div id="lyric_left_m_t"></div>
+                <div id="lyric_left_m_a"></div>
+            </div>
+        </div>
+        <div id="lyric_right">
+            <div id="lyric_right_c"></div>
+            <div id="lyric_right_mask1"></div>
+            <div id="lyric_right_mask2"></div>
+        </div>
+    </div>
+    <!--侧边栏-->
+    <div id="menu">
+        <div id="menu_top" class="menu-class">
+            <div id="menu_top_home" class="menu-item menu-item-focused">主页</div>
+        </div>
+        <div id="menu_songlist" class="menu-class">
+            <p class="menu-title">歌单</p>
+            <button id="menu_songlist_add" class="menu-btn">
+                <img src="../img/icon/plus.svg" />
+            </button>
+            <div id="menu_songlist_sl"></div>
+        </div>
+    </div>
+    <!--内容窗-->
+    <webview id="wbv" src="./home.html" webpreferences="nodeIntegration=yes, contextIsolation=no"></webview>
+    <!--新歌单-->
+    <div id="newSongList" class="ui-dialog">
+        <p class="ui-dialog-title">新歌单</p>
+        <input id="newSongList_name" class="ui-input" type="text" placeholder="歌单名称"
+            style="width: calc(280px - 24px);" /><br>
+        <p id="newSongList_err_empty" class="ui-dialog-tip" style="color: red; display: none;">歌单名称不能为空</p>
+        <div class="ui-dialog-btnbox">
+            <button class="ui-btn ui-dialog-btn" data-ui-dialog="close">取消</button>
+            <button class="ui-btn ui-dialog-btn ui-btn-colored" id="newSongList_ok">完成</button>
+        </div>
+    </div>
+    <!--重命名歌单-->
+    <div id="renSongList" class="ui-dialog">
+        <p class="ui-dialog-title">重命名歌单</p>
+        <input id="renSongList_name" class="ui-input" type="text" placeholder="歌单名称"
+            style="width: calc(280px - 24px);" /><br>
+        <p id="renSongList_err_empty" class="ui-dialog-tip" style="color: red; display: none;">歌单名称不能为空</p>
+        <div class="ui-dialog-btnbox">
+            <button class="ui-btn ui-dialog-btn" data-ui-dialog="close">取消</button>
+            <button class="ui-btn ui-dialog-btn ui-btn-colored" id="renSongList_ok">完成</button>
+        </div>
+    </div>
+    <!--删除歌单-->
+    <div id="delSongList" class="ui-dialog">
+        <p class="ui-dialog-title">确定要删除该歌单？</p>
+        <p class="ui-dialog-text">此操作无法恢复。</p>
+        <div class="ui-dialog-btnbox">
+            <button class="ui-btn ui-dialog-btn" data-ui-dialog="close">否</button>
+            <button class="ui-btn ui-dialog-btn ui-btn-colored" id="delSongList_ok">是</button>
+        </div>
+    </div>
+    <!--Donate-->
+    <div id="donate" class="ui-dialog">
+        <p class="ui-dialog-title">捐助我们！</p>
+        <p class="ui-dialog-text">让 VniMusic 变得更好。</p>
+        <img src="../img/donate/zfb.webp" />
+        <img src="../img/donate/vx.webp" style="margin-left: 8px;" /><br>
+        <div class="ui-dialog-btnbox">
+            <button class="ui-btn ui-dialog-btn" data-ui-dialog="close">关闭</button>
+        </div>
+    </div>
+</body>
+
+</html>

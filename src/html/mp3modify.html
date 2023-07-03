@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src *; img-src 'self' data: base64; style-src 'self' 'unsafe-inline'; script-src 'self';">
+    <link rel="stylesheet" type="text/css" href="../ui/style.css">
+    <script type="text/javascript" src="../ui/script.js"></script>
+    <title>歌词搜索</title>
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/mp3modify/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/mp3modify/animation.css">
+    <script type="text/javascript" src="../js/script.js"></script>
+    <script type="text/javascript" src="../js/mp3modify/window.js"></script>
+    <script type="text/javascript" src="../js/mp3modify/script.js"></script>
+</head>
+
+<body>
+    <div id="titleBar">
+        <div id="titleBar_text">歌词搜索</div>
+        <div id="titleBar_buttons">
+            <button id="titleBar_buttons_minimize">&#xeaba;</button>
+            <button id="titleBar_buttons_close">&#xeab8;</button>
+        </div>
+    </div>
+    <div id="top">
+        <h1>歌词搜索</h1>
+        <p id="top_num">共 0 个文件</p>
+        <button id="top_start" class="ui-btn">开始搜索</button>
+        <svg id="top_loading" class="loading" viewBox="0 0 16 16">
+            <circle class="circle1" cx="8px" cy="8px" r="7px"></circle>
+            <circle class="circle2" cx="8px" cy="8px" r="7px"></circle>
+        </svg>
+        <div id="top_tip">正在搜索</div>
+    </div>
+    <div id="list">
+        <div id="list_top">
+            <div class="content num"></div>
+            <div class="content file">文件名</div>
+            <div class="content title">标题</div>
+        </div>
+        <div id="list_content"></div>
+    </div>
+    <webview id="webview" partition="MP3MODIFY-webview"></webview>
+</body>
+
+</html>

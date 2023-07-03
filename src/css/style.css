@@ -1,0 +1,9 @@
+:root {
+    --theme-color: linear-gradient(270deg, #0078d4, #1e9fff);
+}
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    user-select: none;
+}

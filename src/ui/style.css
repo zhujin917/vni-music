@@ -1,0 +1,67 @@
+.ui-dialog {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 280px;
+    background-color: #fff;
+    z-index: 114514;
+    padding: 15px;
+    /* border: 1px solid #bbb;
+    border-radius: 10px; */
+    border-radius: 6px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, .1);
+    display: none;
+}
+.ui-dialog-title {
+    font-size: 25px;
+    margin: 0 0 8px 5px;
+}
+.ui-dialog-text {
+    font-size: 17px;
+    margin: 2px 0 5px 5px;
+}
+.ui-dialog-tip {
+    font-size: 14px;
+    margin: 8px 0 0 5px;
+}
+.ui-dialog-btnbox {
+    margin-top: 10px;
+    float: right;
+}
+#ui_mask {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, .4);
+    z-index: 114513;
+}
+.ui-btn {
+    border: none;
+    color: #000;
+    background: #ededed;
+    font-size: 15px;
+    padding: 5px 15px;
+    min-width: 80px;
+    border-radius: 4px;
+    transition: all .1s;
+}
+.ui-btn-colored {
+    color: #fff !important;
+    background: var(--theme-color) !important;
+}
+.ui-btn:hover {
+    filter: brightness(.95);
+}
+.ui-btn:active {
+    filter: brightness(.9);
+}
+.ui-input {
+    background-color: #ededed;
+    border: none;
+    outline: none;
+    padding: 8px 12px;
+    font-size: 17px;
+}

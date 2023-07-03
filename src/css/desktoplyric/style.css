@@ -1,0 +1,16 @@
+#lrc {
+    position: fixed;
+    width: 100%;
+    top: 50%;
+    text-align: center;
+    background: var(--theme-color);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 30px;
+    -webkit-text-stroke: #004e8a 1px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    -webkit-app-region: drag;
+}

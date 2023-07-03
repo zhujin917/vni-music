@@ -1,0 +1,54 @@
+img, div, button {
+    display: inline-block;
+    vertical-align: middle;
+}
+#drag {
+    height: calc(100% - 30px);
+    margin-left: 5px;
+    filter: brightness(3);
+    -webkit-app-region: drag;
+}
+#picture {
+    height: 100%;
+    width: auto;
+}
+#info {
+    position: relative;
+    height: 100%;
+    width: 110px;
+}
+#info p {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+#info_title {
+    margin: 6px 0 2px 2px;
+    font-size: 15px;
+}
+#info_artist {
+    margin: 0;
+    font-size: 12px;
+}
+button {
+    border: 0;
+    padding: 0;
+    background-color: transparent;
+    margin: 0 2px;
+    transition: all .1s;
+}
+button:hover {
+    background-color: rgb(0 0 0 / .1);
+}
+button:active {
+    background-color: rgb(0 0 0 / .15);
+}
+#play {
+    width: 30px;
+    height: 30px;
+    border-radius: 114514px;
+    border: 2px solid #333;
+}
+#restore img {
+    transform: scale(.75);
+}

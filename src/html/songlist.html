@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src *; img-src 'self' data: base64; style-src 'self' 'unsafe-inline'; script-src 'self';">
+    <link rel="stylesheet" type="text/css" href="../ui/style.css">
+    <script type="text/javascript" src="../ui/script.js"></script>
+    <title>vni-music/SONGLIST</title>
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/songlist/style.css">
+    <script type="text/javascript" src="../js/script.js"></script>
+    <script type="text/javascript" src="../js/songlist/script.js"></script>
+    <script type="text/javascript" src="../js/songlist/shortkeys.js"></script>
+</head>
+
+<body>
+    <div id="info">
+        <img id="info_pic" src="../img/icon/music.svg" />
+        <h1 id="info_name"></h1>
+        <div id="info_btns">
+            <button id="info_btns_play" class="ui-btn ui-btn-colored">
+                <img src="../img/icon/play-one.svg" />
+                <p>播放全部</p>
+            </button>
+            <button id="info_btns_add" class="ui-btn">
+                <img src="../img/icon/plus.svg" />
+            </button>
+        </div>
+        <p id="info_time"></p>
+        <p id="info_id"></p>
+    </div>
+    <div id="list">
+        <div id="list_top">
+            <div class="content num"></div>
+            <div class="content title">标题</div>
+            <div class="content artist">艺术家</div>
+            <div class="content album">专辑</div>
+            <div class="content time">时长</div>
+        </div>
+        <div id="list_content"></div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,151 @@
+::-webkit-scrollbar {
+    background-color: transparent;
+    width: 6px;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #e0e0e0;
+    border-radius: 114514px;
+}
+
+@font-face {
+    font-family: codicon;
+    src: url("../../font/codicon.ttf");
+}
+#titleBar {
+    position: relative;
+    height: 28px;
+    width: 100%;
+    background-color: #f0f0f0;
+    box-shadow: 0 1px 0 0 #ccc;
+    -webkit-app-region: drag;
+}
+#titleBar_text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 15px;
+}
+#titleBar_buttons {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+}
+#titleBar_buttons button {
+    height: 100%;
+    width: 34px;
+    border: none;
+    padding: 0;
+    background-color: transparent;
+    font-family: "codicon";
+    transition: all .1s;
+    -webkit-app-region: none;
+}
+#titleBar_buttons_minimize:hover {
+    background-color: rgb(0 0 0 / .1);
+}
+#titleBar_buttons_close:hover {
+    color: #fff;
+    background-color: red;
+}
+#titleBar_buttons button:active {
+    opacity: .6;
+}
+
+#top {
+    position: relative;
+    height: 100px;
+}
+#top h1 {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    margin: 0;
+    font-size: 28px;
+    font-weight: normal;
+}
+#top p {
+    position: absolute;
+    top: 60px;
+    left: 30px;
+    margin: 0;
+    font-size: 17px;
+}
+#top button {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    padding: 8px 18px;
+}
+#top_loading {
+    position: absolute;
+    right: 0;
+    top: 40px;
+    transform: scale(.7) translate(-50%, -50%);
+    display: none;
+}
+#top_tip {
+    position: absolute;
+    font-size: 16px;
+    right: 70px;
+    top: 35px;
+    display: none;
+}
+
+#list {
+    position: relative;
+    height: calc(100% - 28px - 100px - 14px);
+}
+#list_top {
+    margin: 0 10px;
+    height: 20px;
+    width: calc(100% - 20px);
+    display: inline-flex;
+    color: #ccc;
+    font-size: 14px;
+}
+
+#list_content {
+    overflow-y: scroll;
+    height: calc(100% - 20px);
+}
+#list_content .item {
+    padding: 5px 0;
+    margin: 0 4px 0 10px;
+    width: calc(100% - 14px);
+    display: inline-flex;
+    font-size: 15px;
+    border-radius: 4px;
+    transition: all .1s;
+}
+#list_content .item:hover {
+    background-color: rgb(0 0 0 / .1);
+}
+#list_content .item:active {
+    background-color: rgb(0 0 0 / .15);
+}
+#list_content .item-odd {
+    background-color: #fafafa;
+}
+
+#list .content {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#list .num {
+    width: 28px;
+    padding-right: 8px;
+    text-align: right;
+}
+#list .file {
+    flex: 4;
+}
+#list .title {
+    flex: 3;
+}
+
+#webview {
+    display: none;
+}
