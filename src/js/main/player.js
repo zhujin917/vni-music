@@ -320,7 +320,7 @@ player.addEventListener("ended", function () {
             document.getElementById("player_center_next").click();
             break;
         case "single-loop":
-            player.play();
+            playNow(getCurrentSrc());
             break;
     }
 });
@@ -554,9 +554,9 @@ function getCurrentSrc() {
 };
 
 document.getElementById("player_center_lyric").addEventListener("click", function () {
-    this.style.background = (this.style.background == "") ? "var(--theme-color)" : "";
-    this.style.color = (this.style.color == "") ? "#fff" : "";
-    ipcRenderer.send("desktop-lyric");
+    let desktopLyricStatus = ipcRenderer.sendSync("desktop-lyric");
+    this.style.background = desktopLyricStatus ? "var(--theme-color)" : "";
+    this.style.color = desktopLyricStatus ? "#fff" : "";
 });
 
 document.getElementById("player_left_pic_mask").addEventListener("click", function () {

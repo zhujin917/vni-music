@@ -71,7 +71,7 @@ function loadSongList() {
     document.getElementById("list").appendChild(listContentDom);
 
     document.getElementById("info_name").innerText = getSongList().name;
-    document.getElementById("info_time").innerText = `创建时间：${new Date(getSongList().time)}`;
+    document.getElementById("info_time").innerText = `创建时间：${new Date(getSongList().time).toLocaleString()}`;
     document.getElementById("info_id").innerText = `标识符：${getSongList().id}`;
     if (getSongList().songs.length == 0) {
         document.getElementById("info_pic").src = "../img/icon/music.svg";

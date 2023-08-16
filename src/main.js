@@ -160,9 +160,10 @@ ipcMain.on("simpmode-control", (event, type) => {
 });
 
 let lyricWindow;
-ipcMain.on("desktop-lyric", () => {
+ipcMain.on("desktop-lyric", (evt) => {
     if (lyricWindow != undefined && !lyricWindow.isDestroyed()) {
         lyricWindow.close();
+        evt.returnValue = false;
         return;
     }
     lyricWindow = new BrowserWindow({
@@ -185,6 +186,7 @@ ipcMain.on("desktop-lyric", () => {
         // lyricWindow.webContents.openDevTools({ mode: "undocked" });
     });
     lyricWindow.setIgnoreMouseEvents(true);
+    evt.returnValue = true;
 });
 ipcMain.on("lyric-update", (event, lrcTxt) => {
     if (lyricWindow == undefined || lyricWindow.isDestroyed()) {
@@ -319,24 +321,38 @@ ipcMain.on("lrc-to-synchronised-lyrics", (event, lrcStr) => {
     event.returnValue = lrcStr2synchronisedLyrics(lrcStr);
 });
 function lrcStr2synchronisedLyrics(lrcStr) {
-    let text = [];
-    lrcStr.split("\n").forEach((l) => {
-        let time;
+    let syncLyrics = [];
+    lrcStr.split("\n").forEach((lrc) => {
+        let timeStr;
         let regex = new RegExp(/\[[\s\S]*?\]/g);
-        while ((time = regex.exec(l)) !== null) {
-            let t = time[0].substring(1, time[0].length - 2);
-            text.push({
-                text: l.substring(l.lastIndexOf("]") + 1),
-                timeStamp: Math.floor(
-                    Number(t.split(":")[0]) * 60 * 1000 + Number(t.split(":")[1]) * 1000
-                )
+        while ((timeStr = regex.exec(lrc)) !== null) {
+            let text = lrc.substring(lrc.lastIndexOf("]") + 1);
+            if (text[text.length - 1] == "\r") {
+                text = text.substring(0, text.length - 1);
+            }
+
+            let time = timeStr[0].substring(1, timeStr[0].length - 2);
+            let timeStamp = Math.floor(Number(time.split(":")[0]) * 60 * 1000 + Number(time.split(":")[1]) * 1000);
+            if (isNaN(timeStamp)) {
+                timeStamp = 0;
+            }
+
+            syncLyrics.push({
+                text: text,
+                timeStamp: timeStamp
             });
         }
     });
-    text.sort((a, b) => {
+    syncLyrics.sort((a, b) => {
         return a.timeStamp - b.timeStamp;
     });
-    return text;
+    if (syncLyrics[0].timeStamp != 0) {
+        syncLyrics.unshift({
+            text: "",
+            timeStamp: 0
+        });
+    }
+    return syncLyrics;
 };
 
 let tray = null;
@@ -382,7 +398,7 @@ function loadTrayContextMenu() {
                     type: "info",
                     buttons: ["确定"],
                     title: "关于",
-                    detail: "版本：0.1.3 (测试版)\n网站：https://music.vnisoft.top\n作者：玖小柒 (https://jiuxiaoqi.top)\n\n版权所有 © 维念软件 2023。保留所有权利。",
+                    detail: "版本：0.1.5 (测试版)\n网站：https://music.vnisoft.top\n作者：玖小柒 (https://jiuxiaoqi.top)\n\n版权所有 © 维念软件 2023。保留所有权利。",
                     icon: path.join(__dirname, "img/logo.png"),
                     noLink: true
                 });

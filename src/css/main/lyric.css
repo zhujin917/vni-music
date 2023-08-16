@@ -22,6 +22,7 @@
     top: 50%;
     transform: translate(-50%, -50%);
     width: 80%;
+    max-width: calc(100vh - 280px);
 }
 #lyric_left_m_pic {
     width: 100%;
