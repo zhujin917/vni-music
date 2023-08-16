@@ -31,10 +31,11 @@
     right: 0;
     top: 0;
     height: 100%;
+    font-size: 0;
 }
 #titleBar_buttons button {
     height: 100%;
-    width: 34px;
+    width: 35px;
     border: none;
     padding: 0;
     background-color: transparent;
@@ -47,7 +48,7 @@
 }
 #titleBar_buttons_close:hover {
     color: #fff;
-    background-color: red;
+    background-color: #E81123;
 }
 #titleBar_buttons button:active {
     opacity: .6;

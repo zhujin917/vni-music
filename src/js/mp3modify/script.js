@@ -61,7 +61,7 @@ window.addEventListener("load", () => {
                 }).toString()
             }
         ], {
-            x: window.innerWidth - 214, y: 108
+            x: window.innerWidth - 230, y: 100
         })
     });
     webview.addEventListener("did-stop-loading", () => {
