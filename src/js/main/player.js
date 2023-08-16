@@ -430,6 +430,11 @@ function setCurrentTime(t) {
     }
     for (let lrcDom of document.getElementById("lyric_right_c").children) {
         if (player.currentTime * 1000 < Number(lrcDom.getAttribute("data-ts"))) {
+            if (!lrcDom.previousElementSibling) {
+                nxtLrcTs = Number(document.getElementById("lyric_right_c").firstElementChild.getAttribute("data-ts"));
+                nxtLrcCount = Number(document.getElementById("lyric_right_c").firstElementChild.getAttribute("data-n"));
+                return;
+            }
             nxtLrcTs = Number(lrcDom.previousElementSibling.getAttribute("data-ts"));
             nxtLrcCount = Number(lrcDom.previousElementSibling.getAttribute("data-n"));
             return;

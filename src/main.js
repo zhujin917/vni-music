@@ -346,12 +346,6 @@ function lrcStr2synchronisedLyrics(lrcStr) {
     syncLyrics.sort((a, b) => {
         return a.timeStamp - b.timeStamp;
     });
-    if (syncLyrics.length > 0 && syncLyrics[0].timeStamp != 0) {
-        syncLyrics.unshift({
-            text: "",
-            timeStamp: 0
-        });
-    }
     return syncLyrics;
 };
 
@@ -398,7 +392,7 @@ function loadTrayContextMenu() {
                     type: "info",
                     buttons: ["确定"],
                     title: "关于",
-                    detail: "版本：0.1.6 (测试版)\n网站：https://music.vnisoft.top\n作者：玖小柒 (https://jiuxiaoqi.top)\n\n版权所有 © 维念软件 2023。保留所有权利。",
+                    detail: "版本：0.2.0 (测试版)\n网站：https://music.vnisoft.top\n作者：玖小柒 (https://jiuxiaoqi.top)\n\n版权所有 © 维念软件 2023。保留所有权利。",
                     icon: path.join(__dirname, "img/logo.png"),
                     noLink: true
                 });
