@@ -10,6 +10,9 @@
     <title>维念音乐</title>
     <link rel="stylesheet" type="text/css" href="../css/style.css">
     <link rel="stylesheet" type="text/css" href="../css/main/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/main/player.css">
+    <link rel="stylesheet" type="text/css" href="../css/main/menu.css">
+    <link rel="stylesheet" type="text/css" href="../css/main/playlist.css">
     <link rel="stylesheet" type="text/css" href="../css/main/lyric.css">
     <script type="text/javascript" src="../js/script.js"></script>
     <script type="text/javascript" src="../js/main/script.js"></script>
@@ -34,12 +37,19 @@
     <!--播放器-->
     <div id="player">
         <div id="player_left">
-            <img id="player_left_pic" src="../img/icon/music.svg" />
-            <div id="player_left_pic_mask">
-                <img src="../img/icon/up.svg" />
+            <div id="player_left_f">
+                <button id="player_left_f_down">
+                    <img src="../img/icon/down.svg">
+                </button>
             </div>
-            <div id="player_left_song"></div>
-            <div id="player_left_singer"></div>
+            <div id="player_left_s">
+                <img id="player_left_s_pic" src="../img/icon/music.svg" />
+                <div id="player_left_s_up">
+                    <img src="../img/icon/up.svg" />
+                </div>
+                <div id="player_left_s_song"></div>
+                <div id="player_left_s_singer"></div>
+            </div>
         </div>
         <div id="player_center">
             <button id="player_center_mode">
@@ -64,6 +74,13 @@
             <div id="player_center_mask"></div>
         </div>
         <div id="player_right">
+            <div id="player_right_volume">
+                <div id="player_right_volume_num">100</div>
+                <input type="range" id="player_right_volume_range" value="100" />
+            </div>
+            <button id="player_right_vol">
+                <img src="../img/icon/volume-notice.svg" />
+            </button>
             <button id="player_right_list">
                 <img src="../img/icon/music-list.svg" />
             </button>

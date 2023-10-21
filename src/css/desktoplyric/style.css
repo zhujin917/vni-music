@@ -1,16 +1,104 @@
-#lrc {
-    position: fixed;
+.frame {
+    background-color: #f5f5f5;
+    -webkit-app-region: drag;
+}
+.locked .frame {
+    box-shadow: none !important;
+    background-color: transparent !important;
+    -webkit-app-region: none !important;
+}
+
+.header {
+    position: absolute;
+    left: 0;
+    top: 10px;
     width: 100%;
-    top: 50%;
-    text-align: center;
+    height: 34px;
+    transition: all .2s;
+}
+.locked .header {
+    opacity: 0 !important;
+}
+.header button {
+    height: 34px;
+    width: 34px;
+    padding: 5px;
+    background-color: transparent;
+    border: none;
+    border-radius: 4px;
+    -webkit-app-region: none;
+}
+.header button:hover {
+    background-color: rgb(0 0 0 / .1);
+}
+.header button:active {
+    background-color: rgb(0 0 0 / .15);
+}
+
+.header .left {
+    position: absolute;
+    left: 10px;
+}
+.header .left img {
+    height: 24px;
+    width: 24px;
+    margin: 5px 0 5px 6px;
+    border-radius: 24px;
+    vertical-align: middle;
+}
+.header .left span {
+    font-size: 15px;
+    font-weight: bolder;
+    color: #333;
+}
+.header .center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.header .right {
+    position: absolute;
+    right: 10px;
+}
+
+#play img {
+    transform: scale(1.2);
+}
+#lock img, #close img {
+    transform: scale(.8);
+}
+
+#unlock {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 20px;
+    height: 30px;
+    width: 30px;
+    display: none;
+    filter: drop-shadow(0 0 1px rgb(0 0 0 / .6));
+    cursor: pointer;
+}
+.locked #unlock {
+    display: block;
+}
+
+#lrc {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 54px;
+    width: fit-content;
+    max-width: calc(100% - 20px);
+    height: calc(100% - 64px);
+    font-size: calc(100vh - 78px);
+    line-height: calc(100vh - 78px);
     background: var(--theme-color);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    font-size: 30px;
     -webkit-text-stroke: #004e8a 1px;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
-    -webkit-app-region: drag;
 }

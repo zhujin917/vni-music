@@ -47,11 +47,13 @@ function loadSonglistsMenu() {
                         addToPlayList(songs, false, getCurrentSrc());
                         switchPlayListStatus(true);
                         setTimeout(() => {
-                            document.getElementById("playlist").scrollTo({
-                                top: document.getElementById("playlist_content").offsetTop +
-                                    document.querySelector(`div[data-songpath="${encodeURI(songs[0])}"]`).offsetTop,
+                            document.getElementById("playlist_content").scrollTo({
+                                top: document.querySelector(`div[data-songpath="${encodeURI(songs[0])}"]`).offsetTop,
                                 behavior: "smooth"
                             });
+                            if (!playing) {
+                                playNow(playlist[0]);
+                            }
                         }, 300);
                         songlist = undefined;
                     }).toString()

@@ -19,6 +19,6 @@ window.addEventListener("load", () => {
         = document.getElementById("next").onclick
         = document.getElementById("restore").onclick
         = function () {
-            ipcRenderer.send("simpmode-control", this.id);
+            ipcRenderer.send("simpmode-window", this.id);
         };
 });

@@ -1,6 +1,6 @@
 {
   "name": "vni-music",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Simple and powerful local music player.",
   "main": "main.js",
   "scripts": {

@@ -111,6 +111,9 @@ ipcMain.on("playing-status", (event, unPaused) => {
     if (simpWindow != undefined && !simpWindow.isDestroyed()) {
         simpWindow.webContents.send("playing-status", isPlayingSound);
     }
+    if (lyricWindow != undefined && !lyricWindow.isDestroyed()) {
+        lyricWindow.webContents.send("playing-status", isPlayingSound);
+    }
 });
 
 function setTitleBarOverlay(color) {
@@ -130,11 +133,11 @@ ipcMain.on("simpmode", () => {
     simpWindow = new BrowserWindow({
         x: screen.getCursorScreenPoint().x,
         y: screen.getCursorScreenPoint().y,
-        height: 50,
-        width: 340,
+        height: 54,
+        width: 344,
         frame: false,
+        transparent: true,
         resizable: false,
-        show: false,
         skipTaskbar: true,
         alwaysOnTop: true,
         webPreferences: {
@@ -143,36 +146,37 @@ ipcMain.on("simpmode", () => {
         }
     });
     simpWindow.loadURL(path.join(__dirname, "html/simpmode.html"));
-    simpWindow.on("ready-to-show", () => {
-        simpWindow.show();
+    simpWindow.webContents.on("did-finish-load", () => {
         simpWindow.webContents.send("playing-status", isPlayingSound);
         simpWindow.webContents.send("playing-info-update", playingInfo);
         // simpWindow.webContents.openDevTools({ mode: "undocked" });
     });
 });
-ipcMain.on("simpmode-control", (event, type) => {
-    if (type == "restore") {
-        simpWindow.close();
-        mainWindow.show();
-        return;
+ipcMain.on("simpmode-window", (event, role) => {
+    switch (role) {
+        case "restore":
+            simpWindow.close();
+            mainWindow.show();
+            break;
+        default:
+            mainWindow.webContents.send("out-control", role);
     }
-    mainWindow.webContents.send("out-control", type);
 });
 
 let lyricWindow;
 ipcMain.on("desktop-lyric", (evt) => {
     if (lyricWindow != undefined && !lyricWindow.isDestroyed()) {
         lyricWindow.close();
-        evt.returnValue = false;
+        evt.reply("desktop-lyric-callback", false);
         return;
     }
     lyricWindow = new BrowserWindow({
-        height: screen.getPrimaryDisplay().workArea.height,
-        width: screen.getPrimaryDisplay().workArea.width,
+        height: 110,
+        width: 600,
+        minHeight: 90,
+        minWidth: 320,
         frame: false,
-        resizable: false,
         transparent: true,
-        show: false,
         skipTaskbar: true,
         alwaysOnTop: true,
         webPreferences: {
@@ -181,24 +185,39 @@ ipcMain.on("desktop-lyric", (evt) => {
         }
     });
     lyricWindow.loadURL(path.join(__dirname, "html/desktoplyric.html"));
-    lyricWindow.on("ready-to-show", () => {
-        lyricWindow.show();
+    lyricWindow.webContents.on("did-finish-load", () => {
+        lyricWindow.webContents.send("playing-status", isPlayingSound);
         // lyricWindow.webContents.openDevTools({ mode: "undocked" });
     });
-    lyricWindow.setIgnoreMouseEvents(true);
-    evt.returnValue = true;
+    lyricWindow.on("minimize", () => {
+        lyricWindow.close();
+    });
+    lyricWindow.on("closed", () => {
+        mainWindow.send("desktop-lyric-callback", false);
+    });
+    evt.reply("desktop-lyric-callback", true);
+});
+ipcMain.on("desktop-lyric-window", (event, role) => {
+    switch (role) {
+        case "close":
+            lyricWindow.close();
+            break;
+        case "ignore":
+            lyricWindow.setIgnoreMouseEvents(true, { forward: true });
+            break;
+        case "notIgnore":
+            lyricWindow.setIgnoreMouseEvents(false);
+            break;
+        default:
+            mainWindow.webContents.send("out-control", role);
+            break;
+    }
 });
 ipcMain.on("lyric-update", (event, lrcTxt) => {
     if (lyricWindow == undefined || lyricWindow.isDestroyed()) {
         return;
     }
     lyricWindow.webContents.send("lyric-update", lrcTxt);
-});
-ipcMain.on("keypress", (event, key) => {
-    if (lyricWindow == undefined || lyricWindow.isDestroyed()) {
-        return;
-    }
-    lyricWindow.webContents.send("kp", key);
 });
 
 ipcMain.on("popup-menu", (event, template, options) => {
@@ -276,8 +295,6 @@ ipcMain.on("mp3-modify", (event, songs) => {
         frame: false,
         resizable: false,
         show: false,
-        parent: mainWindow,
-        modal: true,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
@@ -394,7 +411,7 @@ function loadTrayContextMenu() {
                     type: "info",
                     buttons: ["确定"],
                     title: "关于",
-                    detail: "版本：0.2.1 (测试版)\n网站：https://music.vnisoft.top\n作者：玖小柒 (https://jiuxiaoqi.top)\n\n版权所有 © 维念软件 2023。保留所有权利。",
+                    detail: "版本：0.3.0 (测试版)\n网站：https://music.vnisoft.top\n作者：玖小柒 (https://jiuxiaoqi.top)\n\n版权所有 © 维念软件 2023。保留所有权利。",
                     icon: path.join(__dirname, "img/logo.png"),
                     noLink: true
                 });

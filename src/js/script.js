@@ -16,10 +16,6 @@ window.addEventListener("dragstart", (ev) => {
     ev.preventDefault();
 });
 
-window.addEventListener("keypress", (ev) => {
-    ipcRenderer.send("keypress", ev.key);
-});
-
 function sec2str(sec) {
     let ret = "";
     ret += (Array(2).join(0) + Math.floor(sec / 60)).slice(-2);

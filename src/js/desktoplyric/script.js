@@ -1,29 +1,54 @@
+let locked = false;
+
 ipcRenderer.on("lyric-update", (event, lrcTxt) => {
     document.getElementById("lrc").innerHTML = lrcTxt;
 });
+ipcRenderer.on("playing-status", (event, isPlayingSound) => {
+    document.getElementById("play").firstElementChild.src = isPlayingSound ? "../img/icon/pause.svg" : "../img/icon/play-one.svg";
+});
 
-let x = 0, y = 0, s = 30;
-ipcRenderer.on("kp", (event, key) => {
-    switch (key) {
-        case "w":
-            y -= 10;
-            break;
-        case "s":
-            y += 10;
-            break;
-        case "a":
-            x -= 10;
-            break;
-        case "d":
-            x += 10;
-            break;
-        case "=":
-            s += 2;
-            break;
-        case "-":
-            s -= 2;
-            break;
-    }
-    document.getElementById("lrc").style.transform = `translate(${x}px, ${y}px)`;
-    document.getElementById("lrc").style.fontSize = `${s}px`;
+window.addEventListener("load", () => {
+    document.getElementById("previous").onclick
+        = document.getElementById("play").onclick
+        = document.getElementById("next").onclick
+        = document.getElementById("close").onclick
+        = function () {
+            ipcRenderer.send("desktop-lyric-window", this.id);
+        };
+
+    document.getElementById("lock").addEventListener("click", () => {
+        locked = true;
+        document.body.classList.add("locked");
+        document.getElementById("unlock").style.opacity = "0";
+        ipcRenderer.send("desktop-lyric-window", "ignore");
+    });
+    document.getElementById("unlock").addEventListener("click", () => {
+        locked = false;
+        document.body.classList.remove("locked");
+        document.getElementById("unlock").style.opacity = "0";
+        ipcRenderer.send("desktop-lyric-window", "notIgnore");
+    });
+
+    document.getElementById("lrc").addEventListener("mouseenter", () => {
+        if (locked) {
+            document.getElementById("unlock").style.opacity = "1";
+        }
+    });
+    document.getElementById("lrc").addEventListener("mouseleave", () => {
+        if (locked) {
+            document.getElementById("unlock").style.opacity = "0";
+        }
+    });
+    document.getElementById("unlock").addEventListener("mouseenter", () => {
+        if (locked) {
+            document.getElementById("unlock").style.opacity = "1";
+            ipcRenderer.send("desktop-lyric-window", "notIgnore");
+        }
+    });
+    document.getElementById("unlock").addEventListener("mouseleave", () => {
+        if (locked) {
+            document.getElementById("unlock").style.opacity = "0";
+            ipcRenderer.send("desktop-lyric-window", "ignore");
+        }
+    });
 });

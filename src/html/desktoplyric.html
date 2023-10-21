@@ -9,13 +9,42 @@
     <script type="text/javascript" src="../ui/script.js"></script>
     <title>vni-music/DESKTOPLYRIC</title>
     <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/frame.css">
     <link rel="stylesheet" type="text/css" href="../css/desktoplyric/style.css">
     <script type="text/javascript" src="../js/script.js"></script>
     <script type="text/javascript" src="../js/desktoplyric/script.js"></script>
 </head>
 
 <body>
-    <div id="lrc">维念音乐 歌词预览</div>
+    <div class="frame">
+        <div class="header">
+            <div class="left">
+                <img src="../img/logo.png" />
+                <span>歌词</span>
+            </div>
+            <div class="center">
+                <button id="previous">
+                    <img src="../img/icon/go-start.svg" />
+                </button>
+                <button id="play">
+                    <img src="../img/icon/play-one.svg" />
+                </button>
+                <button id="next">
+                    <img src="../img/icon/go-end.svg" />
+                </button>
+            </div>
+            <div class="right">
+                <button id="lock">
+                    <img src="../img/icon/lock.svg" />
+                </button>
+                <button id="close">
+                    <img src="../img/icon/close.svg" />
+                </button>
+            </div>
+        </div>
+        <img id="unlock" src="../img/icon/unlock-one.svg" />
+        <div id="lrc">维念音乐</div>
+    </div>
 </body>
 
 </html>

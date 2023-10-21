@@ -5,6 +5,8 @@ let player = document.getElementById("player_audio");
 let playlist = [];
 let playlistWater = [];
 
+let restoreVolume = 100;
+
 function switchPlayingStatus(isPlaying) {
     document.getElementById("player_left").style.display = isPlaying ? "block" : "none";
     document.getElementById("player_right").style.display = isPlaying ? "block" : "none";
@@ -12,7 +14,8 @@ function switchPlayingStatus(isPlaying) {
     document.getElementById("player_center_mask").style.display = isPlaying ? "none" : "block";
     if (!isPlaying) {
         document.getElementById("lyric").style.top = "";
-        document.getElementById("player_left_pic_mask").firstElementChild.style.transform = "translate(-50%, -50%)";
+        document.getElementById("player_left_f").style.top = "-100%";
+        document.getElementById("player_left_s").style.top = "0";
     }
 };
 
@@ -154,19 +157,19 @@ function playNow(songPath) {
         ["title", "artist", "picture"]
     ).read({
         onSuccess: (tag) => {
-            document.getElementById("player_left_song").innerText
+            document.getElementById("player_left_s_song").innerText
                 = document.getElementById("lyric_left_m_t").innerText
                 = (tag.tags.title == undefined) ? songPath.substring(songPath.lastIndexOf("\\") + 1) : tag.tags.title;
 
-            document.getElementById("player_left_singer").innerText
+            document.getElementById("player_left_s_singer").innerText
                 = document.getElementById("lyric_left_m_a").innerText
                 = (tag.tags.artist == undefined) ? "" : tag.tags.artist;
 
-            document.getElementById("player_left_pic").src
+            document.getElementById("player_left_s_pic").src
                 = document.getElementById("lyric_left_m_pic").src = getPicBase64(tag.tags.picture);
 
             ipcRenderer.send("playing-info",
-                document.getElementById("player_left_song").innerText,
+                document.getElementById("player_left_s_song").innerText,
                 tag.tags.artist,
                 document.getElementById("lyric_left_m_pic").src
             );
@@ -483,10 +486,52 @@ document.getElementById("wbv").addEventListener("ipc-message", (ev) => {
                     top: document.querySelector(`div[data-songpath="${encodeURI(ev.args[0][0])}"]`).offsetTop,
                     behavior: "smooth"
                 });
+                if (!playing) {
+                    playNow(playlist[0]);
+                }
             }, 300);
             break;
     }
 });
+
+document.getElementById("player").addEventListener("mousedown", (ev) => {
+    ev.stopPropagation();
+    switchPlayListStatus(false);
+    document.getElementById("player_right_volume").style.display = "none";
+});
+document.getElementById("player_right_vol").onmousedown =
+    document.getElementById("player_right_volume").onmousedown =
+    (ev) => {
+        ev.stopPropagation();
+    };
+
+function setVolume(vol) {
+    player.volume = vol;
+    let volText = Math.round(vol * 100);
+    document.getElementById("player_right_volume_num").innerText = volText;
+    document.getElementById("player_right_volume_range").value = volText;
+    document.getElementById("player_right_volume_range").style.backgroundSize = volText + "%";
+    document.getElementById("player_right_vol").children[0].src = (vol > 0) ? "../img/icon/volume-notice.svg" : "../img/icon/volume-mute.svg";
+};
+document.getElementById("player_right_vol").addEventListener("click", () => {
+    if (document.getElementById("player_right_volume").style.display != "block") {
+        document.getElementById("player_right_volume").style.display = "block";
+        return;
+    }
+    if (player.volume > 0) {
+        restoreVolume = player.volume;
+        setVolume(0);
+    }
+    else {
+        setVolume(restoreVolume);
+    }
+});
+document.getElementById("player_right_volume_range").onmousemove =
+    document.getElementById("player_right_volume_range").onmousedown =
+    document.getElementById("player_right_volume_range").onmouseup =
+    function () {
+        setVolume(this.value / 100);
+    };
 
 function switchPlayListStatus(stat) {
     if (!stat) {
@@ -503,9 +548,6 @@ function switchPlayListStatus(stat) {
         document.getElementById("playlist").style.right = "0";
     }
 };
-document.getElementById("player").addEventListener("mousedown", (ev) => {
-    ev.stopPropagation();
-});
 document.getElementById("player_right_list").addEventListener("click", () => {
     switchPlayListStatus(document.getElementById("playlist").style.right != "0px");
 });
@@ -558,20 +600,23 @@ function getCurrentSrc() {
     return decodeURI(player.currentSrc.split("file:///")[1].replaceAll("/", "\\"));
 };
 
-document.getElementById("player_center_lyric").addEventListener("click", function () {
-    let desktopLyricStatus = ipcRenderer.sendSync("desktop-lyric");
-    this.style.background = desktopLyricStatus ? "var(--theme-color)" : "";
-    this.style.color = desktopLyricStatus ? "#fff" : "";
+document.getElementById("player_center_lyric").addEventListener("click", () => {
+    ipcRenderer.send("desktop-lyric");
+});
+ipcRenderer.on("desktop-lyric-callback", (event, desktopLyricStatus) => {
+    document.getElementById("player_center_lyric").style.background = desktopLyricStatus ? "var(--theme-color)" : "";
+    document.getElementById("player_center_lyric").style.color = desktopLyricStatus ? "#fff" : "";
 });
 
-document.getElementById("player_left_pic_mask").addEventListener("click", function () {
-    if (document.getElementById("lyric").style.top != "60px") {
-        document.getElementById("lyric").style.top = "60px";
-        this.firstElementChild.style.transform = "translate(-50%, -50%) rotate(180deg)";
-        return;
-    }
+document.getElementById("player_left_f_down").addEventListener("click", () => {
     document.getElementById("lyric").style.top = "";
-    this.firstElementChild.style.transform = "translate(-50%, -50%)";
+    document.getElementById("player_left_f").style.top = "-100%";
+    document.getElementById("player_left_s").style.top = "0";
+});
+document.getElementById("player_left_s_up").addEventListener("click", () => {
+    document.getElementById("lyric").style.top = "60px";
+    document.getElementById("player_left_f").style.top = "0";
+    document.getElementById("player_left_s").style.top = "100%";
 });
 
 let lyricScrolledTime = 0;

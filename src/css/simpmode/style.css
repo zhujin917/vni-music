@@ -1,12 +1,25 @@
+.frame {
+    background-color: #fff;
+    font-size: 0;
+}
+
 img, div, button {
     display: inline-block;
     vertical-align: middle;
 }
 #drag {
-    height: calc(100% - 30px);
-    margin-left: 5px;
-    filter: brightness(3);
+    position: relative;
+    height: 100%;
+    width: 30px;
     -webkit-app-region: drag;
+}
+#drag img {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    height: calc(100% - 25px);
+    filter: brightness(2.5);
 }
 #picture {
     height: 100%;
@@ -15,7 +28,7 @@ img, div, button {
 #info {
     position: relative;
     height: 100%;
-    width: 110px;
+    width: 136px;
 }
 #info p {
     text-overflow: ellipsis;
@@ -23,11 +36,11 @@ img, div, button {
     white-space: nowrap;
 }
 #info_title {
-    margin: 6px 0 2px 2px;
+    margin: 4px 0 2px 8px;
     font-size: 15px;
 }
 #info_artist {
-    margin: 0;
+    margin: 0 0 0 8px;
     font-size: 12px;
 }
 button {

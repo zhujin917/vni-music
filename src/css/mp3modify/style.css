@@ -7,53 +7,6 @@
     border-radius: 114514px;
 }
 
-@font-face {
-    font-family: codicon;
-    src: url("../../font/codicon.ttf");
-}
-#titleBar {
-    position: relative;
-    height: 28px;
-    width: 100%;
-    background-color: #f0f0f0;
-    box-shadow: 0 1px 0 0 #ccc;
-    -webkit-app-region: drag;
-}
-#titleBar_text {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 15px;
-}
-#titleBar_buttons {
-    position: absolute;
-    right: 0;
-    top: 0;
-    height: 100%;
-    font-size: 0;
-}
-#titleBar_buttons button {
-    height: 100%;
-    width: 35px;
-    border: none;
-    padding: 0;
-    background-color: transparent;
-    font-family: "codicon";
-    transition: all .1s;
-    -webkit-app-region: none;
-}
-#titleBar_buttons_minimize:hover {
-    background-color: rgb(0 0 0 / .1);
-}
-#titleBar_buttons_close:hover {
-    color: #fff;
-    background-color: #E81123;
-}
-#titleBar_buttons button:active {
-    opacity: .6;
-}
-
 #top {
     position: relative;
     height: 100px;
