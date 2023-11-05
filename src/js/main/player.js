@@ -1,3 +1,5 @@
+const musicMetadata = require("music-metadata");
+
 let playing = false;
 let playMode = "listed-loop";
 let player = document.getElementById("player_audio");
@@ -122,7 +124,7 @@ function loadPlayList(restorePlayingPathParam) {
         });
         listContentDom.appendChild(d);
 
-        ipcRenderer.send("get-mp3-info", songPath, ((songPath, songInfo) => {
+        Electron.ipcRenderer.invoke("get-song-info", songPath).then((songInfo) => {
             let qsList = document.querySelectorAll(`div[data-songpath="${encodeURI(songPath)}"]`);
             for (let dom of qsList[qsList.length - 1].children) {
                 if (dom.classList.contains("title")) {
@@ -142,7 +144,7 @@ function loadPlayList(restorePlayingPathParam) {
             if (infoLoaded == playlist.length) {
                 showPlayListContent();
             }
-        }).toString());
+        });
     });
 };
 
@@ -153,30 +155,26 @@ function playNow(songPath) {
     player.play();
     nxtLrcTs = null;
 
-    new jsmediatags.Reader(songPath).setTagsToRead(
-        ["title", "artist", "picture"]
-    ).read({
-        onSuccess: (tag) => {
-            document.getElementById("player_left_s_song").innerText
-                = document.getElementById("lyric_left_m_t").innerText
-                = (tag.tags.title == undefined) ? songPath.substring(songPath.lastIndexOf("\\") + 1) : tag.tags.title;
+    musicMetadata.parseFile(songPath).then((value) => {
+        document.getElementById("player_left_s_song").innerText
+            = document.getElementById("lyric_left_m_t").innerText
+            = (value.common.title == undefined) ? songPath.substring(songPath.lastIndexOf("\\") + 1) : value.common.title;
 
-            document.getElementById("player_left_s_singer").innerText
-                = document.getElementById("lyric_left_m_a").innerText
-                = (tag.tags.artist == undefined) ? "" : tag.tags.artist;
+        document.getElementById("player_left_s_singer").innerText
+            = document.getElementById("lyric_left_m_a").innerText
+            = (value.common.artist == undefined) ? "" : value.common.artist;
 
-            document.getElementById("player_left_s_pic").src
-                = document.getElementById("lyric_left_m_pic").src = getPicBase64(tag.tags.picture);
+        document.getElementById("player_left_s_pic").src
+            = document.getElementById("lyric_left_m_pic").src = getIPictureBase64(value.common.picture[0]);
 
-            ipcRenderer.send("playing-info",
-                document.getElementById("player_left_s_song").innerText,
-                tag.tags.artist,
-                document.getElementById("lyric_left_m_pic").src
-            );
-        }
+        Electron.ipcRenderer.send("playing-info",
+            document.getElementById("player_left_s_song").innerText,
+            value.common.artist,
+            document.getElementById("lyric_left_m_pic").src
+        );
     });
 
-    ipcRenderer.send("get-id3-lyric", songPath, ((songPath, lyric) => {
+    Electron.ipcRenderer.send("get-id3-lyric", songPath, ((songPath, lyric) => {
         document.getElementById("lyric_right_c").innerHTML = "";
         let synchronisedText;
         if (lyric == "undefined") {
@@ -184,7 +182,7 @@ function playNow(songPath) {
             if (!fs.existsSync(lrcFilePath)) {
                 return;
             }
-            synchronisedText = ipcRenderer.sendSync("lrc-to-synchronised-lyrics", fs.readFileSync(lrcFilePath).toString());
+            synchronisedText = Electron.ipcRenderer.sendSync("lrc-to-synchronised-lyrics", fs.readFileSync(lrcFilePath).toString());
         }
         else {
             synchronisedText = JSON.parse(lyric)[0].synchronisedText;
@@ -232,7 +230,7 @@ function stopPlaying() {
         document.getElementById("player_center_progress_r").innerHTML = "00:00";
         document.getElementById("player_center_progress_i").style.width = "";
 
-        ipcRenderer.send("playing-info", undefined);
+        Electron.ipcRenderer.send("playing-info", undefined);
     }, 300);
 
     if (document.getElementById("wbv").getTitle() == "vni-music/SONGLIST") {
@@ -263,7 +261,7 @@ player.addEventListener("loadedmetadata", function () {
     document.getElementById("player_center_progress_r").innerText = sec2str(this.duration);
 });
 player.addEventListener("play", function () {
-    ipcRenderer.send("playing-status", true);
+    Electron.ipcRenderer.send("playing-status", true);
     document.getElementById("player_center_play").firstElementChild.src = "../img/icon/pause.svg";
 
     let oldPlayingDom = document.getElementsByClassName("item-playing");
@@ -279,7 +277,7 @@ player.addEventListener("play", function () {
     document.getElementById("wbv").send("playing-song", encodeURI(getCurrentSrc()));
 });
 player.addEventListener("pause", function () {
-    ipcRenderer.send("playing-status", false);
+    Electron.ipcRenderer.send("playing-status", false);
     document.getElementById("player_center_play").firstElementChild.src = "../img/icon/play-one.svg";
 });
 player.addEventListener("timeupdate", function () {
@@ -307,7 +305,7 @@ player.addEventListener("timeupdate", function () {
             });
         }
 
-        ipcRenderer.send("lyric-update", currentLrcDom.innerText);
+        Electron.ipcRenderer.send("lyric-update", currentLrcDom.innerText);
 
         let nxtLrcDom = document.querySelector(`div[data-ts="${nxtLrcTs}"]`).nextElementSibling;
         if (nxtLrcDom != undefined) {
@@ -555,13 +553,13 @@ document.getElementById("player_right_list").addEventListener("click", () => {
 document.getElementById("wbv").addEventListener("did-finish-load", function () {
     this.executeJavaScript(`
         document.body.addEventListener("mousedown", () => {
-            ipcRenderer.sendToHost("mousedown");
+            Electron.ipcRenderer.sendToHost("mousedown");
         });
         document.body.addEventListener("mousemove", (ev) => {
-            ipcRenderer.sendToHost("mousemove", ev.pageX);
+            Electron.ipcRenderer.sendToHost("mousemove", ev.pageX);
         });
         document.body.addEventListener("mouseup", (ev) => {
-            ipcRenderer.sendToHost("mouseup");
+            Electron.ipcRenderer.sendToHost("mouseup");
         });
     `);
 });
@@ -579,7 +577,7 @@ document.getElementById("playlist_clear").addEventListener("click", () => {
     stopPlaying();
 });
 
-ipcRenderer.on("out-control", (event, msg) => {
+Electron.ipcRenderer.on("out-control", (event, msg) => {
     switch (msg) {
         case "play":
             document.getElementById("player_center_play").click();
@@ -601,9 +599,9 @@ function getCurrentSrc() {
 };
 
 document.getElementById("player_center_lyric").addEventListener("click", () => {
-    ipcRenderer.send("desktop-lyric");
+    Electron.ipcRenderer.send("desktop-lyric");
 });
-ipcRenderer.on("desktop-lyric-callback", (event, desktopLyricStatus) => {
+Electron.ipcRenderer.on("desktop-lyric-callback", (event, desktopLyricStatus) => {
     document.getElementById("player_center_lyric").style.background = desktopLyricStatus ? "var(--theme-color)" : "";
     document.getElementById("player_center_lyric").style.color = desktopLyricStatus ? "#fff" : "";
 });

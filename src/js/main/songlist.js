@@ -27,7 +27,7 @@ function loadSonglistsMenu() {
         });
         d.addEventListener("contextmenu", function () {
             songListContextMenuCount = Array.prototype.indexOf.call(document.getElementById("menu_songlist_sl").children, this);
-            ipcRenderer.send("popup-menu", [
+            Electron.ipcRenderer.send("popup-menu", [
                 {
                     label: "播放全部",
                     icon: path.join(__dirname, "../img/icon/play-one.png"),
@@ -89,7 +89,7 @@ function loadSonglistsMenu() {
                     label: "导出",
                     onclick: (() => {
                         let slName = document.getElementById("menu_songlist_sl").children[songListContextMenuCount].innerText;
-                        let outPath = ipcRenderer.sendSync("show-open-dialog-sync", {
+                        let outPath = Electron.ipcRenderer.sendSync("show-open-dialog-sync", {
                             title: `导出歌单「${slName}」的索引`,
                             buttonLabel: `导出歌单「${slName}」的索引到此文件夹`,
                             properties: ["openDirectory"]
@@ -105,7 +105,7 @@ function loadSonglistsMenu() {
                 }, {
                     label: "导出全部",
                     onclick: (() => {
-                        let outPath = ipcRenderer.sendSync("show-open-dialog-sync", {
+                        let outPath = Electron.ipcRenderer.sendSync("show-open-dialog-sync", {
                             title: "导出全部歌单的索引",
                             buttonLabel: "导出全部歌单的索引到此文件夹",
                             properties: ["openDirectory"]

@@ -1,8 +1,8 @@
 {
   "name": "vni-music",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Simple and powerful local music player.",
-  "main": "main.js",
+  "main": "main/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron-forge start",
@@ -17,8 +17,7 @@
     "electron": "^25.2.0"
   },
   "dependencies": {
-    "jsmediatags": "^3.9.7",
-    "mp3-duration": "^1.1.0",
+    "music-metadata": "^7.13.5",
     "node-id3": "^0.2.6"
   }
 }

@@ -1,3 +1,5 @@
+const musicMetadata = require("music-metadata");
+
 let songList;
 let songListN = 0;
 let getSongList;
@@ -31,10 +33,10 @@ window.addEventListener("load", () => {
     });
 
     document.getElementById("info_btns_play").addEventListener("click", () => {
-        ipcRenderer.sendToHost("play-all", getSongList().songs);
+        Electron.ipcRenderer.sendToHost("play-all", getSongList().songs);
     });
     document.getElementById("info_btns_add").addEventListener("click", () => {
-        ipcRenderer.sendToHost("add-all", getSongList().songs);
+        Electron.ipcRenderer.sendToHost("add-all", getSongList().songs);
     });
 });
 
@@ -44,7 +46,7 @@ function showListContent() {
     document.getElementById("list_content_n").hidden = false;
     document.getElementById("list_content_n").id = "list_content";
 
-    ipcRenderer.sendToHost("list-content-loaded");
+    Electron.ipcRenderer.sendToHost("list-content-loaded");
 };
 
 let contextMenuDom = null;
@@ -99,32 +101,32 @@ function loadSongList() {
         }
         s.addEventListener("contextmenu", function () {
             contextMenuDom = this;
-            ipcRenderer.send("popup-menu", [
+            Electron.ipcRenderer.send("popup-menu", [
                 {
                     label: "立即播放",
                     icon: path.join(__dirname, "../img/icon/play-one.png"),
                     onclick: (() => {
-                        ipcRenderer.sendToHost("play-selected", getSelectedSongPath());
+                        Electron.ipcRenderer.sendToHost("play-selected", getSelectedSongPath());
                     }).toString()
                 }, {
                     label: "添加到播放列表",
                     icon: path.join(__dirname, "../img/icon/plus.png"),
                     onclick: (() => {
-                        ipcRenderer.sendToHost("add-selected", getSelectedSongPath());
+                        Electron.ipcRenderer.sendToHost("add-selected", getSelectedSongPath());
                     }).toString()
                 }, {
                     type: "separator"
                 }, {
                     label: "搜索歌词",
                     onclick: (() => {
-                        ipcRenderer.send("mp3-modify", getSelectedSongPath());
+                        Electron.ipcRenderer.send("mp3-modify", getSelectedSongPath());
                     }).toString()
                 }
             ]);
         });
         s.addEventListener("dblclick", function () {
             this.classList.remove("item-focused");
-            ipcRenderer.sendToHost("play-dblclick", getSongList().songs, decodeURI(this.getAttribute("data-songpath")));
+            Electron.ipcRenderer.sendToHost("play-dblclick", getSongList().songs, decodeURI(this.getAttribute("data-songpath")));
         });
         s.addEventListener("click", function (ev) {
             if (ev.shiftKey && document.getElementsByClassName("item-focused").length == 1) {
@@ -205,7 +207,7 @@ function loadSongList() {
                     }
                     if (getSongList().songs.indexOf(file.path) != -1) {
                         if (ev.dataTransfer.files.length == 1) {
-                            ipcRenderer.sendToHost("alert", "提示", "该歌曲已存在于此歌单中。");
+                            Electron.ipcRenderer.sendToHost("alert", "提示", "该歌曲已存在于此歌单中。");
                         }
                         continue;
                     }
@@ -247,11 +249,11 @@ function loadSongList() {
         });
         listContentDom.appendChild(s);
 
-        ipcRenderer.send("get-mp3-info", song, ((songPath, songInfo) => {
-            let qsList = document.querySelectorAll(`div[data-songpath="${encodeURI(songPath)}"]`);
+        Electron.ipcRenderer.invoke("get-song-info", song).then((songInfo) => {
+            let qsList = document.querySelectorAll(`div[data-songpath="${encodeURI(song)}"]`);
             for (let dom of qsList[qsList.length - 1].children) {
                 if (dom.classList.contains("title")) {
-                    dom.innerText = (songInfo.title == undefined) ? songPath.substring(songPath.lastIndexOf("\\") + 1) : songInfo.title;
+                    dom.innerText = (songInfo.title == undefined) ? song.substring(song.lastIndexOf("\\") + 1) : songInfo.title;
                 }
                 else if (dom.classList.contains("artist") && songInfo.artist != undefined) {
                     dom.innerText = songInfo.artist;
@@ -267,13 +269,11 @@ function loadSongList() {
             if (infoLoaded == getSongList().songs.length) {
                 showListContent();
             }
-        }).toString());
+        });
 
         if (count == 1) {
-            new jsmediatags.Reader(song).setTagsToRead(["picture"]).read({
-                onSuccess: (tag) => {
-                    document.getElementById("info_pic").src = getPicBase64(tag.tags.picture);
-                }
+            musicMetadata.parseFile(song).then((value) => {
+                document.getElementById("info_pic").src = getIPictureBase64(value.common.picture[0]);
             });
         }
     });
@@ -284,7 +284,7 @@ function saveSongList() {
     loadSongList();
 };
 
-ipcRenderer.on("playing-song", (event, songPathTag) => {
+Electron.ipcRenderer.on("playing-song", (event, songPathTag) => {
     let playingDom = document.querySelector(`div[data-songpath="${songPathTag}"]`);
     let oldPlayingDom = document.getElementsByClassName("item-playing");
     if (oldPlayingDom.length > 0) {

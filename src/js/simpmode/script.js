@@ -1,4 +1,4 @@
-ipcRenderer.on("playing-info-update", (event, playingInfo) => {
+Electron.ipcRenderer.on("playing-info-update", (event, playingInfo) => {
     if (playingInfo == null) {
         document.getElementById("info_title").src = "";
         document.getElementById("info_artist").src = "";
@@ -9,8 +9,8 @@ ipcRenderer.on("playing-info-update", (event, playingInfo) => {
     document.getElementById("info_artist").innerText = playingInfo.artist;
     document.getElementById("picture").src = playingInfo.picture;
 });
-ipcRenderer.on("playing-status", (event, isPlayingSound) => {
-    document.getElementById("play").firstElementChild.src = isPlayingSound ? "../img/icon/pause.svg" : "../img/icon/play-one.svg";
+Electron.ipcRenderer.on("playing-status", (event, isSounding) => {
+    document.getElementById("play").firstElementChild.src = isSounding ? "../img/icon/pause.svg" : "../img/icon/play-one.svg";
 });
 
 window.addEventListener("load", () => {
@@ -19,6 +19,6 @@ window.addEventListener("load", () => {
         = document.getElementById("next").onclick
         = document.getElementById("restore").onclick
         = function () {
-            ipcRenderer.send("simpmode-window", this.id);
+            Electron.ipcRenderer.send("simpmode-window", this.id);
         };
 });

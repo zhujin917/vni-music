@@ -1,6 +1,6 @@
 let songsInfo = {};
 
-ipcRenderer.on("songs", (event, songs) => {
+Electron.ipcRenderer.on("songs", (event, songs) => {
     document.getElementById("top_num").innerText = `共 ${songs.length} 个文件`;
 
     let count = 0;
@@ -22,11 +22,11 @@ ipcRenderer.on("songs", (event, songs) => {
         `;
         document.getElementById("list_content").appendChild(d);
 
-        ipcRenderer.send("get-mp3-info", songPath, ((songPath, songInfo) => {
+        Electron.ipcRenderer.invoke("get-song-info", songPath).then((songInfo) => {
             songsInfo[songPath] = songInfo;
             document.querySelectorAll(`div[data-songpath="${encodeURI(songPath)}"]`)[0]
                 .children[2].innerText = songInfo.title;
-        }).toString());
+        });
     });
 });
 
@@ -34,7 +34,7 @@ let webview;
 window.addEventListener("load", () => {
     webview = document.getElementById("webview");
     document.getElementById("top_start").addEventListener("click", () => {
-        ipcRenderer.send("popup-menu", [
+        Electron.ipcRenderer.send("popup-menu", [
             {
                 label: "嵌入到源音频文件",
                 onclick: (() => {
@@ -48,13 +48,13 @@ window.addEventListener("load", () => {
             }, {
                 label: "保存为 LRC 文件指定文件夹",
                 onclick: (() => {
-                    lyricSavingFolderPath = ipcRenderer.sendSync("show-open-dialog-sync", {
+                    lyricSavingFolderPath = Electron.ipcRenderer.sendSync("show-open-dialog-sync", {
                         title: "保存歌词为 LRC 文件",
                         buttonLabel: "保存歌词为 LRC 文件到此文件夹",
                         defaultPath: Object.keys(songsInfo)[0].substring(0, Object.keys(songsInfo)[0].lastIndexOf("\\")),
                         properties: ["openDirectory"]
-                    });
-                    if (lyricSavingPath == undefined) {
+                    })[0];
+                    if (lyricSavingFolderPath == undefined) {
                         return;
                     }
                     startSearchingLyric("folder");
@@ -64,41 +64,40 @@ window.addEventListener("load", () => {
             x: window.innerWidth - 230, y: 100
         })
     });
-    webview.addEventListener("did-stop-loading", () => {
-        let link = webview.getURL().split("https://music.163.com/#")[1];
-        if (link.startsWith("/search")) {
-            function checkIframeReadyState() {
-                webview.executeJavaScript(`document.getElementById("g_iframe").contentDocument.getElementsByClassName("u-load")[0] == undefined`)
-                    .then((ret) => {
-                        if (!ret) {
-                            setTimeout(checkIframeReadyState, 10);
-                            return;
-                        }
-                        checkIfCanSearch();
-                    });
-            };
-            checkIframeReadyState();
-            function checkIfCanSearch() {
-                webview.executeJavaScript(`document.getElementById("g_iframe").contentDocument.getElementsByClassName("n-nmusic")[0] == undefined`)
-                    .then((ret) => {
-                        if (!ret) {
-                            document.getElementById("list_content").children[lyricSavingCount].children[0].innerHTML
-                                = `<span style="color:red">✘</span>`;
-                            lyricSavingCount += 1;
-                            checkIfComplete();
-                            return;
-                        }
-                        jumpToDetailsPage();
-                    });
-            };
-            function jumpToDetailsPage() {
-                webview.executeJavaScript(`
-                    document.getElementById("g_iframe").contentDocument
-                        .getElementsByClassName("srchsongst")[0].children[0]
-                        .children[1].children[0].children[0].children[0].click()
-                `);
-            };
+
+    webview.addEventListener("did-finish-load", () => {
+        if (webview.getURL().indexOf("bing.com") == -1) {
+            return;
         }
+        getSearchingResult(0);
+        function getSearchingResult(times) {
+            if (times >= 8) {
+                document.getElementById("list_content").children[lyricSavingCount].children[0].innerHTML
+                    = `<span style="color:red">✘</span>`;
+                lyricSavingCount += 1;
+                checkIfComplete();
+                return;
+            }
+            webview.executeJavaScript(`
+                leeTianSuo1145141919810result = [];
+                for (let elem of document.getElementsByTagName("a")) {
+                    if (elem.href.indexOf("https://music.163.com/song?id=") == -1 || elem.href.indexOf("bing.com") != -1) {
+                        continue;
+                    }
+                    leeTianSuo1145141919810result.push(elem.href);
+                }
+                leeTianSuo1145141919810result;
+            `).then((ret) => {
+                if (ret.length == 0) {
+                    throw new Error("retry");
+                }
+                webview.src = ret[0];
+            }).catch(() => {
+                setTimeout(() => {
+                    getSearchingResult(times + 1);
+                }, 200);
+            });
+        };
     });
 });
 
@@ -119,10 +118,10 @@ function searchNextLyric() {
     document.getElementById("list_content").children[lyricSavingCount].children[0].innerHTML
         = document.getElementById("top_loading").outerHTML.replace("id", "data-id");
     lyricSavingPath = Object.keys(songsInfo)[lyricSavingCount];
-    webview.src = `https://music.163.com/#/search/m/?s=${encodeURI(songsInfo[lyricSavingPath].title)
-        } ${encodeURI(songsInfo[lyricSavingPath].artist)} ${encodeURI(songsInfo[lyricSavingPath].album)}`;
+    let keyword = `${songsInfo[lyricSavingPath].title} ${songsInfo[lyricSavingPath].artist} 单曲 网易云音乐 site:music.163.com`;
+    webview.src = `https://cn.bing.com/search?q=${encodeURI(keyword)}`;
 };
-ipcRenderer.on("lyric-upload-data", (event, uploadData) => {
+Electron.ipcRenderer.on("lyric-upload-data", (event, uploadData) => {
     fetch("https://music.163.com/weapi/song/lyric?csrf_token=", {
         method: "POST",
         headers: {
@@ -134,7 +133,7 @@ ipcRenderer.on("lyric-upload-data", (event, uploadData) => {
     }).then((lyric) => {
         switch (lyricSavingMode) {
             case "source-file":
-                ipcRenderer.send("set-id3-lyric", lyricSavingPath, lyric.lrc.lyric);
+                Electron.ipcRenderer.send("set-id3-lyric", lyricSavingPath, lyric.lrc.lyric);
                 break;
             case "source-folder":
                 fs.writeFileSync(`${lyricSavingPath.substring(0, lyricSavingPath.length - 4)}.lrc`, lyric.lrc.lyric);

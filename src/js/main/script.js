@@ -22,7 +22,7 @@ window.addEventListener("load", () => {
     // document.getElementById("wbv").openDevTools();
 
     document.getElementById("title_buttons_simpmode").addEventListener("click", () => {
-        ipcRenderer.send("simpmode");
+        Electron.ipcRenderer.send("simpmode");
     });
     document.getElementById("title_buttons_donate").addEventListener("click", () => {
         ui.openDialog(document.getElementById("donate"));
@@ -30,7 +30,7 @@ window.addEventListener("load", () => {
 });
 
 function setOverlayBackground(color) {
-    ipcRenderer.send("set-overlay-background", color);
+    Electron.ipcRenderer.send("set-overlay-background", color);
 };
 function switchWbvTo(link, itemdom) {
     if (itemdom != undefined) {
