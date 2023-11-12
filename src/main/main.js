@@ -2,18 +2,16 @@ const path = require("path");
 const Electron = require("electron");
 
 const { createBrowserWindow } = require("./basic/browserWindow");
-const { createTrayMenu } = require("./basic/TrayMenu");
-const { createThumbarButtons } = require("./basic/thumbarButtons");
+const { createThumbarButtons } = require("./basic/thumbarButtons.js");
 
-const { getSongInfo } = require("./function/getSongInfo");
-const { lrcStr2synchronisedLyrics } = require("./function/lrcStr2synchronisedLyrics");
+const { getSongInfo } = require("./function/getSongInfo.js");
+const { lrcStr2synchronisedLyrics } = require("./function/lrcStr2synchronisedLyrics.js");
 
 const nodeId3 = require("node-id3");
 
 // Blocking multiple startups
 Electron.app.on("second-instance", () => {
     mainWindow.show();
-    mainWindow.focus();
 });
 if (!Electron.app.requestSingleInstanceLock()) {
     Electron.app.exit();
@@ -33,15 +31,20 @@ Electron.app.whenReady().then(() => {
     tray.setToolTip("维念音乐");
     tray.on("click", () => {
         mainWindow.show();
-        mainWindow.focus();
     });
-    loadTray();
+
+    trayWindow = createBrowserWindow("tray");
+    tray.on("right-click", () => {
+        let pos = Electron.screen.getCursorScreenPoint();
+        setTimeout(() => {
+            trayWindow.setPosition(pos.x - 5, pos.y - 180 + 5);
+            trayWindow.show();
+            trayWindow.webContents.send("show-tray-menu", isSounding);
+        }, trayWindow.isVisible() ? 10 : 1);
+    });
 });
 
 // Basic API
-function loadTray() {
-    tray.setContextMenu(createTrayMenu(mainWindow.id, isSounding));
-};
 function setThumbarButtons() {
     mainWindow.setThumbarButtons(createThumbarButtons(mainWindow.id, isSounding));
 };
@@ -57,17 +60,6 @@ Electron.ipcMain.on("set-overlay-background", (event, color) => {
 });
 Electron.ipcMain.on("show-open-dialog-sync", (event, options) => {
     event.returnValue = Electron.dialog.showOpenDialogSync(options);
-});
-Electron.ipcMain.on("popup-menu", (event, template, options) => {
-    for (let i = 0; i < template.length; i += 1) {
-        if (template[i].onclick == undefined) {
-            continue;
-        }
-        template[i].click = () => {
-            event.sender.executeJavaScript(`(${template[i].onclick})()`);
-        };
-    }
-    Electron.Menu.buildFromTemplate(template).popup(options);
 });
 Electron.ipcMain.on("window-role", (event, role) => {
     let win = Electron.BrowserWindow.fromWebContents(event.sender);
@@ -145,7 +137,6 @@ let isSounding = false;
 Electron.ipcMain.on("playing-status", (event, unPaused) => {
     isSounding = unPaused;
     setThumbarButtons();
-    loadTray();
     if (simpWindow != undefined && !simpWindow.isDestroyed()) {
         simpWindow.webContents.send("playing-status", isSounding);
     }
@@ -155,12 +146,29 @@ Electron.ipcMain.on("playing-status", (event, unPaused) => {
 });
 
 // All types of windows
+let trayWindow;
+Electron.ipcMain.on("tray-window", (event, role, messageBoxOptions) => {
+    switch (role) {
+        case "play":
+        case "previous":
+        case "next":
+            trayWindow.blur();
+            mainWindow.webContents.send("out-control", role);
+            break;
+        case "about":
+            Electron.dialog.showMessageBox(messageBoxOptions);
+            break;
+        case "exit":
+            Electron.app.exit();
+            break;
+    }
+});
+
 let simpWindow;
 Electron.ipcMain.on("simpmode", () => {
     mainWindow.hide();
     if (simpWindow != undefined && !simpWindow.isDestroyed()) {
         simpWindow.show();
-        simpWindow.focus();
         return;
     }
     simpWindow = createBrowserWindow("simp");
@@ -222,7 +230,7 @@ Electron.ipcMain.on("lyric-update", (event, lrcTxt) => {
 });
 
 Electron.ipcMain.on("mp3-modify", (event, songs) => {
-    let mp3ModifyWindow = createBrowserWindow("mp3Modify");
+    let mp3ModifyWindow = createBrowserWindow("mp3Modify", mainWindow.id);
     mp3ModifyWindow.on("ready-to-show", () => {
         mp3ModifyWindow.show();
         mp3ModifyWindow.webContents.send("songs", songs);

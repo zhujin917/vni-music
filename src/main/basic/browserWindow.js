@@ -20,7 +20,7 @@ let create = {
             }
         });
         Menu.setApplicationMenu(null);
-        mainWindow.loadFile(path.join(__dirname, "../../html/main.html"));
+        mainWindow.loadURL(path.join(__dirname, "../../html/main.html"));
         mainWindow.on("close", (evt) => {
             evt.preventDefault();
             mainWindow.hide();
@@ -70,22 +70,49 @@ let create = {
         return lyricWindow;
     },
 
-    mp3Modify() {
+    mp3Modify(mainWindowId) {
         let mp3ModifyWindow = new BrowserWindow({
             width: 420,
             height: 680,
             frame: false,
             resizable: false,
             show: false,
+            skipTaskbar: true,
+            modal: true,
+            parent: BrowserWindow.fromId(mainWindowId),
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false,
                 webviewTag: true
             }
         });
-        mp3ModifyWindow.loadFile(path.join(__dirname, "../../html/mp3modify.html"));
+        mp3ModifyWindow.loadURL(path.join(__dirname, "../../html/mp3modify.html"));
         return mp3ModifyWindow;
+    },
+
+    tray() {
+        let trayWindow = new BrowserWindow({
+            width: 122,
+            height: 180,
+            frame: false,
+            transparent: true,
+            skipTaskbar: true,
+            show: false,
+            resizable: false,
+            alwaysOnTop: true,
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false
+            }
+        });
+        trayWindow.on("blur", () => {
+            setTimeout(() => {
+                trayWindow.hide();
+            }, 5);
+        });
+        trayWindow.loadURL(path.join(__dirname, "../../html/tray.html"));
+        return trayWindow;
     }
 };
 
-module.exports.createBrowserWindow = (name) => create[name]();
+module.exports.createBrowserWindow = (name, ...args) => create[name](...args);

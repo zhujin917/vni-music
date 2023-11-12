@@ -34,20 +34,20 @@ let webview;
 window.addEventListener("load", () => {
     webview = document.getElementById("webview");
     document.getElementById("top_start").addEventListener("click", () => {
-        Electron.ipcRenderer.send("popup-menu", [
+        new ContextMenu([
             {
                 label: "嵌入到源音频文件",
-                onclick: (() => {
+                click() {
                     startSearchingLyric("source-file");
-                }).toString()
+                }
             }, {
                 label: "保存为 LRC 文件到源文件夹",
-                onclick: (() => {
+                click() {
                     startSearchingLyric("source-folder");
-                }).toString()
+                }
             }, {
                 label: "保存为 LRC 文件指定文件夹",
-                onclick: (() => {
+                click() {
                     lyricSavingFolderPath = Electron.ipcRenderer.sendSync("show-open-dialog-sync", {
                         title: "保存歌词为 LRC 文件",
                         buttonLabel: "保存歌词为 LRC 文件到此文件夹",
@@ -58,15 +58,31 @@ window.addEventListener("load", () => {
                         return;
                     }
                     startSearchingLyric("folder");
-                }).toString()
+                }
             }
-        ], {
-            x: window.innerWidth - 230, y: 100
-        })
+        ]).popup([window.innerWidth - 230, 100]);
     });
 
     webview.addEventListener("did-finish-load", () => {
-        if (webview.getURL().indexOf("bing.com") == -1) {
+        if (webview.getURL() != "https://www.baidu.com/") {
+            return;
+        }
+        let keyword = "site:music.163.com \"";
+        if (songsInfo[lyricSavingPath].title) {
+            keyword += songsInfo[lyricSavingPath].title + " ";
+        }
+        if (songsInfo[lyricSavingPath].artist) {
+            keyword += songsInfo[lyricSavingPath].artist + " ";
+        }
+        keyword += "单曲 网易云音乐\"";
+        webview.executeJavaScript(`
+            document.getElementById("kw").value = \`${keyword}\`;
+            document.getElementById("su").click();
+        `);
+    });
+
+    webview.addEventListener("page-title-updated", () => {
+        if (!webview.getTitle().endsWith("_百度搜索")) {
             return;
         }
         getSearchingResult(0);
@@ -80,11 +96,10 @@ window.addEventListener("load", () => {
             }
             webview.executeJavaScript(`
                 leeTianSuo1145141919810result = [];
-                for (let elem of document.getElementsByTagName("a")) {
-                    if (elem.href.indexOf("https://music.163.com/song?id=") == -1 || elem.href.indexOf("bing.com") != -1) {
-                        continue;
+                for (let elem of document.getElementsByClassName("result")) {
+                    if (/https:\\\/\\\/music\\.163\\.com\\\/\\S*song\\?id=\\S+/.test(elem.getAttribute("mu"))) {
+                        leeTianSuo1145141919810result.push(elem.getAttribute("mu"));
                     }
-                    leeTianSuo1145141919810result.push(elem.href);
                 }
                 leeTianSuo1145141919810result;
             `).then((ret) => {
@@ -118,8 +133,7 @@ function searchNextLyric() {
     document.getElementById("list_content").children[lyricSavingCount].children[0].innerHTML
         = document.getElementById("top_loading").outerHTML.replace("id", "data-id");
     lyricSavingPath = Object.keys(songsInfo)[lyricSavingCount];
-    let keyword = `${songsInfo[lyricSavingPath].title} ${songsInfo[lyricSavingPath].artist} 单曲 网易云音乐 site:music.163.com`;
-    webview.src = `https://cn.bing.com/search?q=${encodeURI(keyword)}`;
+    webview.src = "https://www.baidu.com/";
 };
 Electron.ipcRenderer.on("lyric-upload-data", (event, uploadData) => {
     fetch("https://music.163.com/weapi/song/lyric?csrf_token=", {

@@ -99,30 +99,28 @@ function loadSongList() {
         if (count % 2 == 1) {
             s.classList.add("item-odd");
         }
-        s.addEventListener("contextmenu", function () {
+        s.addEventListener("contextmenu", function (evt) {
             contextMenuDom = this;
-            Electron.ipcRenderer.send("popup-menu", [
+            new ContextMenu([
                 {
                     label: "立即播放",
-                    icon: path.join(__dirname, "../img/icon/play-one.png"),
-                    onclick: (() => {
+                    click() {
                         Electron.ipcRenderer.sendToHost("play-selected", getSelectedSongPath());
-                    }).toString()
+                    }
                 }, {
                     label: "添加到播放列表",
-                    icon: path.join(__dirname, "../img/icon/plus.png"),
-                    onclick: (() => {
+                    click() {
                         Electron.ipcRenderer.sendToHost("add-selected", getSelectedSongPath());
-                    }).toString()
+                    }
                 }, {
                     type: "separator"
                 }, {
                     label: "搜索歌词",
-                    onclick: (() => {
+                    click() {
                         Electron.ipcRenderer.send("mp3-modify", getSelectedSongPath());
-                    }).toString()
+                    }
                 }
-            ]);
+            ]).popup([evt.clientX, evt.clientY]);
         });
         s.addEventListener("dblclick", function () {
             this.classList.remove("item-focused");

@@ -1,0 +1,8 @@
+.context-menu {
+    position: fixed;
+    left: 5px;
+    top: 5px;
+    box-shadow: 0 0 5px rgb(0 0 0 / .1);
+    background: #f0f0f0;
+    width: 100px;
+}

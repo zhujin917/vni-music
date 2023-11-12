@@ -25,23 +25,21 @@ function loadSonglistsMenu() {
             }
             switchWbvTo(`songlist.html?id=${sl.id}`, d);
         });
-        d.addEventListener("contextmenu", function () {
+        d.addEventListener("contextmenu", function (evt) {
             songListContextMenuCount = Array.prototype.indexOf.call(document.getElementById("menu_songlist_sl").children, this);
-            Electron.ipcRenderer.send("popup-menu", [
+            new ContextMenu([
                 {
                     label: "播放全部",
-                    icon: path.join(__dirname, "../img/icon/play-one.png"),
-                    onclick: (() => {
+                    click() {
                         readSongList();
                         let songs = songlist[songListContextMenuCount].songs;
                         addToPlayList(songs, true, songs[0]);
                         playNow(songs[0]);
                         songlist = undefined;
-                    }).toString()
+                    }
                 }, {
                     label: "添加到播放列表",
-                    icon: path.join(__dirname, "../img/icon/plus.png"),
-                    onclick: (() => {
+                    click() {
                         readSongList();
                         let songs = songlist[songListContextMenuCount].songs;
                         addToPlayList(songs, false, getCurrentSrc());
@@ -56,12 +54,12 @@ function loadSonglistsMenu() {
                             }
                         }, 300);
                         songlist = undefined;
-                    }).toString()
+                    }
                 }, {
                     type: "separator"
                 }, {
                     label: "向上移动",
-                    onclick: (() => {
+                    click() {
                         readSongList();
                         let tmpSl = songlist[songListContextMenuCount];
                         let focusedSl = document.getElementsByClassName("menu-item-focused")[0].getAttribute("data-sl-id");
@@ -70,10 +68,10 @@ function loadSonglistsMenu() {
                         saveSongList();
                         loadSonglistsMenu();
                         document.querySelector(`div[data-sl-id="${focusedSl}"]`).classList.add("menu-item-focused");
-                    }).toString()
+                    }
                 }, {
                     label: "向下移动",
-                    onclick: (() => {
+                    click() {
                         readSongList();
                         let tmpSl = songlist[songListContextMenuCount];
                         let focusedSl = document.getElementsByClassName("menu-item-focused")[0].getAttribute("data-sl-id");
@@ -82,12 +80,12 @@ function loadSonglistsMenu() {
                         saveSongList();
                         loadSonglistsMenu();
                         document.querySelector(`div[data-sl-id="${focusedSl}"]`).classList.add("menu-item-focused");
-                    }).toString()
+                    }
                 }, {
                     type: "separator"
                 }, {
                     label: "导出",
-                    onclick: (() => {
+                    click() {
                         let slName = document.getElementById("menu_songlist_sl").children[songListContextMenuCount].innerText;
                         let outPath = Electron.ipcRenderer.sendSync("show-open-dialog-sync", {
                             title: `导出歌单「${slName}」的索引`,
@@ -101,10 +99,10 @@ function loadSonglistsMenu() {
                         fs.writeFileSync(`${outPath}\\${slName}.json`, JSON.stringify(songlist[songListContextMenuCount]));
                         songlist = undefined;
                         ui.alert("导出操作已完成。", `已完成对歌单「${slName}」的索引导出。`);
-                    }).toString()
+                    }
                 }, {
                     label: "导出全部",
-                    onclick: (() => {
+                    click() {
                         let outPath = Electron.ipcRenderer.sendSync("show-open-dialog-sync", {
                             title: "导出全部歌单的索引",
                             buttonLabel: "导出全部歌单的索引到此文件夹",
@@ -119,25 +117,25 @@ function loadSonglistsMenu() {
                         });
                         songlist = undefined;
                         ui.alert("导出操作已完成。", "已完成对全部歌单的索引导出。");
-                    }).toString()
+                    }
                 }, {
                     type: "separator"
                 }, {
                     label: "重命名",
-                    onclick: (() => {
+                    click() {
                         document.getElementById("renSongList_name").value = document.getElementById("menu_songlist_sl").children[songListContextMenuCount].innerText;
                         document.getElementById("renSongList_err_empty").style.display = "none";
                         ui.openDialog(document.getElementById("renSongList"));
                         document.getElementById("renSongList_name").focus();
                         document.getElementById("renSongList_name").select();
-                    }).toString()
+                    }
                 }, {
                     label: "删除",
-                    onclick: (() => {
+                    click() {
                         ui.openDialog(document.getElementById("delSongList"));
-                    }).toString()
+                    }
                 }
-            ]);
+            ]).popup([evt.clientX, evt.clientY]);
         });
         document.getElementById("menu_songlist_sl").appendChild(d);
     });

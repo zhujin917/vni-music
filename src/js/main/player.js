@@ -165,7 +165,8 @@ function playNow(songPath) {
             = (value.common.artist == undefined) ? "" : value.common.artist;
 
         document.getElementById("player_left_s_pic").src
-            = document.getElementById("lyric_left_m_pic").src = getIPictureBase64(value.common.picture[0]);
+            = document.getElementById("lyric_left_m_pic").src
+            = value.common.picture ? getIPictureBase64(value.common.picture[0]) : "../img/icon/music.svg";
 
         Electron.ipcRenderer.send("playing-info",
             document.getElementById("player_left_s_song").innerText,
