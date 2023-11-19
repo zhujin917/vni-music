@@ -12,7 +12,7 @@ window.addEventListener("keydown", (ev) => {
         switch (ev.key) {
             case "Delete":
                 for (let dom of document.getElementsByClassName("item-focused")) {
-                    getSongList().songs.splice(getSongList().songs.indexOf(
+                    songList.splice(songList.indexOf(
                         decodeURI(dom.getAttribute("data-songpath"))
                     ), 1);
                 }

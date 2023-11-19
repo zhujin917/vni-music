@@ -1,6 +1,6 @@
 .context-menu {
     position: absolute;
-    background: rgb(250 250 250 / .65);
+    background: rgb(250 250 250 / .75);
     backdrop-filter: blur(15px);
     top: 22px;
     width: fit-content;

@@ -71,13 +71,12 @@
     display: inline-flex;
     font-size: 15px;
     border-radius: 4px;
-    transition: all .1s;
 }
 #list_content .item:hover {
-    background-color: rgb(0 0 0 / .1);
+    background-color: rgb(0 0 0 / .05);
 }
 #list_content .item:active {
-    background-color: rgb(0 0 0 / .15);
+    background-color: rgb(0 0 0 / .1);
 }
 #list_content .item-odd {
     background-color: #fafafa;
@@ -89,9 +88,16 @@
     white-space: nowrap;
 }
 #list .num {
+    position: relative;
     width: 28px;
     padding-right: 8px;
     text-align: right;
+}
+#list .num .loading {
+    position: absolute;
+    transform: scale(.4) translate(-50%, -50%);
+    left: calc(50% - 14px);
+    top: calc(50% - 15px);
 }
 #list .file {
     flex: 4;

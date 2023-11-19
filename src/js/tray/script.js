@@ -29,7 +29,7 @@ document.getElementById("about").onclick = () => {
         type: "info",
         buttons: ["确定"],
         title: "关于",
-        detail: "版本：0.3.2 (测试版)\n网站：https://music.vnisoft.top\n作者：玖小柒 (https://jiuxiaoqi.top)\n\n版权所有 © 维念软件 2023。保留所有权利。",
+        detail: "版本：0.4.0 (测试版)\n网站：https://music.vnisoft.top\n作者：玖小柒 (https://jiuxiaoqi.top)\n\n版权所有 © 维念软件 2023。保留所有权利。",
         icon: path.join(__dirname, "../img/logo.png"),
         noLink: true
     });

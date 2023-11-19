@@ -18,10 +18,10 @@ class ContextMenu {
                     this.dom.parentElement.remove();
                     setTimeout(() => {
                         item.click();
-                    }, 1);
+                    }, 10);
                 });
             }
-            else if (item.type = "separator") {
+            else if (item.type == "separator") {
                 d = document.createElement("hr");
                 d.classList.add("context-menu-separator");
             }
@@ -51,7 +51,7 @@ class ContextMenu {
 
         setTimeout(() => {
             this.dom.style.opacity = "1";
-        }, 1);
+        }, 10);
     };
 };
 

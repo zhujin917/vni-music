@@ -29,13 +29,3 @@
         transform: rotate(1080deg);
     }
 }
-
-.num {
-    position: relative;
-}
-.num .loading {
-    position: absolute;
-    transform: scale(.4) translate(-50%, -50%);
-    left: calc(50% - 14px);
-    top: calc(50% - 15px);
-}

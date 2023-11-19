@@ -1,20 +1,25 @@
-let songlist;
-function readSongList() {
-    if (!fs.existsSync(`${__datadir}\\songlist.json`)) {
-        fs.writeFileSync(`${__datadir}\\songlist.json`, "[]", "utf-8");
-        songlist = [];
-    }
-    else {
-        songlist = JSON.parse(fs.readFileSync(`${__datadir}\\songlist.json`));
-    }
+let songListIndex;
+let songListIndexFileObject = new AppDataFile("User/SongListIndex.json");
+
+function saveSongListIndex() {
+    new AppDataFile("User/SongListIndex.json").writeObjectSync(songListIndex);
+};
+function readSongList(songListId) {
+    return new AppDataFile(`SongLists/${songListId}.json`).readObjectSync();
 };
 
-let songListContextMenuCount;
-function loadSonglistsMenu() {
-    readSongList();
-    document.getElementById("menu_songlist_sl").innerHTML = "";
+if (songListIndexFileObject.existsSync()) {
+    songListIndex = songListIndexFileObject.readObjectSync();
+}
+else {
+    songListIndex = [];
+    saveSongListIndex();
+}
 
-    songlist.forEach(sl => {
+let songListContextMenuIndex;
+function loadSonglistsMenu() {
+    document.getElementById("menu_songlist_sl").innerHTML = "";
+    songListIndex.forEach(sl => {
         let d = document.createElement("div");
         d.classList.add("menu-item");
         d.innerText = sl.name;
@@ -23,25 +28,22 @@ function loadSonglistsMenu() {
             if (this.classList.contains("menu-item-focused")) {
                 return;
             }
-            switchWbvTo(`songlist.html?id=${sl.id}`, d);
+            switchWbvTo(`songlist.html?id=${sl.id}&type=${sl.type}&name=${encodeURI(sl.name)}`, d);
         });
         d.addEventListener("contextmenu", function (evt) {
-            songListContextMenuCount = Array.prototype.indexOf.call(document.getElementById("menu_songlist_sl").children, this);
+            songListContextMenuIndex = Array.prototype.indexOf.call(document.getElementById("menu_songlist_sl").children, this);
             new ContextMenu([
                 {
                     label: "播放全部",
                     click() {
-                        readSongList();
-                        let songs = songlist[songListContextMenuCount].songs;
+                        let songs = readSongList(document.getElementById("menu_songlist_sl").children[songListContextMenuIndex].getAttribute("data-sl-id"));
                         addToPlayList(songs, true, songs[0]);
                         playNow(songs[0]);
-                        songlist = undefined;
                     }
                 }, {
                     label: "添加到播放列表",
                     click() {
-                        readSongList();
-                        let songs = songlist[songListContextMenuCount].songs;
+                        let songs = readSongList(document.getElementById("menu_songlist_sl").children[songListContextMenuIndex].getAttribute("data-sl-id"));
                         addToPlayList(songs, false, getCurrentSrc());
                         switchPlayListStatus(true);
                         setTimeout(() => {
@@ -53,52 +55,55 @@ function loadSonglistsMenu() {
                                 playNow(playlist[0]);
                             }
                         }, 300);
-                        songlist = undefined;
                     }
                 }, {
                     type: "separator"
                 }, {
                     label: "向上移动",
                     click() {
-                        readSongList();
-                        let tmpSl = songlist[songListContextMenuCount];
-                        let focusedSl = document.getElementsByClassName("menu-item-focused")[0].getAttribute("data-sl-id");
-                        songlist.splice(songListContextMenuCount, 1);
-                        songlist.splice(songListContextMenuCount - 1, 0, tmpSl);
-                        saveSongList();
+                        let tmpSl = songListIndex[songListContextMenuIndex];
+                        let focusedId = document.getElementsByClassName("menu-item-focused")[0].getAttribute("data-sl-id");
+                        songListIndex.splice(songListContextMenuIndex, 1);
+                        songListIndex.splice(songListContextMenuIndex - 1, 0, tmpSl);
+                        saveSongListIndex();
                         loadSonglistsMenu();
-                        document.querySelector(`div[data-sl-id="${focusedSl}"]`).classList.add("menu-item-focused");
+                        if (focusedId) {
+                            document.querySelector(`div[data-sl-id="${focusedId}"]`).classList.add("menu-item-focused");
+                        }
                     }
                 }, {
                     label: "向下移动",
                     click() {
-                        readSongList();
-                        let tmpSl = songlist[songListContextMenuCount];
-                        let focusedSl = document.getElementsByClassName("menu-item-focused")[0].getAttribute("data-sl-id");
-                        songlist.splice(songListContextMenuCount, 1);
-                        songlist.splice(songListContextMenuCount + 1, 0, tmpSl);
-                        saveSongList();
+                        let tmpSl = songListIndex[songListContextMenuIndex];
+                        let focusedId = document.getElementsByClassName("menu-item-focused")[0].getAttribute("data-sl-id");
+                        songListIndex.splice(songListContextMenuIndex, 1);
+                        songListIndex.splice(songListContextMenuIndex + 1, 0, tmpSl);
+                        saveSongListIndex();
                         loadSonglistsMenu();
-                        document.querySelector(`div[data-sl-id="${focusedSl}"]`).classList.add("menu-item-focused");
+                        if (focusedId) {
+                            document.querySelector(`div[data-sl-id="${focusedId}"]`).classList.add("menu-item-focused");
+                        }
                     }
                 }, {
                     type: "separator"
                 }, {
                     label: "导出",
                     click() {
-                        let slName = document.getElementById("menu_songlist_sl").children[songListContextMenuCount].innerText;
+                        let targetSlDom = document.getElementById("menu_songlist_sl").children[songListContextMenuIndex];
                         let outPath = Electron.ipcRenderer.sendSync("show-open-dialog-sync", {
-                            title: `导出歌单「${slName}」的索引`,
-                            buttonLabel: `导出歌单「${slName}」的索引到此文件夹`,
+                            title: `导出歌单「${targetSlDom.innerText}」的索引`,
+                            buttonLabel: `导出歌单「${targetSlDom.innerText}」的索引到此文件夹`,
                             properties: ["openDirectory"]
-                        });
+                        })[0];
                         if (outPath == undefined) {
                             return;
                         }
-                        readSongList();
-                        fs.writeFileSync(`${outPath}\\${slName}.json`, JSON.stringify(songlist[songListContextMenuCount]));
-                        songlist = undefined;
-                        ui.alert("导出操作已完成。", `已完成对歌单「${slName}」的索引导出。`);
+                        fs.writeFileSync(`${outPath}\\${targetSlDom.innerText}.json`, JSON.stringify({
+                            id: targetSlDom.getAttribute("data-sl-id"),
+                            name: targetSlDom.innerText,
+                            songs: readSongList(targetSlDom.getAttribute("data-sl-id"))
+                        }));
+                        ui.alert("导出操作已完成。", `已完成对歌单「${targetSlDom.innerText}」的索引导出。`);
                     }
                 }, {
                     label: "导出全部",
@@ -107,15 +112,17 @@ function loadSonglistsMenu() {
                             title: "导出全部歌单的索引",
                             buttonLabel: "导出全部歌单的索引到此文件夹",
                             properties: ["openDirectory"]
-                        });
+                        })[0];
                         if (outPath == undefined) {
                             return;
                         }
-                        readSongList();
-                        songlist.forEach((sl) => {
-                            fs.writeFileSync(`${outPath}\\${sl.name}.json`, JSON.stringify(sl));
+                        songListIndex.forEach((sl) => {
+                            fs.writeFileSync(`${outPath}\\${sl.name}.json`, JSON.stringify({
+                                id: sl.id,
+                                name: sl.name,
+                                songs: readSongList(sl.id)
+                            }));
                         });
-                        songlist = undefined;
                         ui.alert("导出操作已完成。", "已完成对全部歌单的索引导出。");
                     }
                 }, {
@@ -123,7 +130,7 @@ function loadSonglistsMenu() {
                 }, {
                     label: "重命名",
                     click() {
-                        document.getElementById("renSongList_name").value = document.getElementById("menu_songlist_sl").children[songListContextMenuCount].innerText;
+                        document.getElementById("renSongList_name").value = document.getElementById("menu_songlist_sl").children[songListContextMenuIndex].innerText;
                         document.getElementById("renSongList_err_empty").style.display = "none";
                         ui.openDialog(document.getElementById("renSongList"));
                         document.getElementById("renSongList_name").focus();
@@ -139,7 +146,6 @@ function loadSonglistsMenu() {
         });
         document.getElementById("menu_songlist_sl").appendChild(d);
     });
-    songlist = undefined;
 };
 
 window.addEventListener("load", () => {
@@ -155,14 +161,15 @@ window.addEventListener("load", () => {
         document.getElementById("newSongList_name").value = "";
         ui.closeDialog(document.getElementById("newSongList"));
 
-        readSongList();
-        songlist.push({
-            id: Math.floor(Math.random() * 100000000),
-            name: newSongListName,
-            time: new Date().getTime(),
-            songs: []
+        let newSongListId = Math.floor(Math.random() * Math.pow(10, 8));
+        songListIndex.push({
+            id: newSongListId,
+            type: "files",
+            name: newSongListName
         });
-        saveSongList();
+        saveSongListIndex();
+
+        new AppDataFile(`SongLists/${newSongListId}.json`).writeObjectSync([]);
 
         loadSonglistsMenu();
         document.getElementById("menu_songlist_sl").lastChild.click();
@@ -177,26 +184,29 @@ window.addEventListener("load", () => {
         document.getElementById("renSongList_name").value = "";
         ui.closeDialog(document.getElementById("renSongList"));
 
-        document.getElementById("menu_songlist_sl").children[songListContextMenuCount].innerText = newSongListName;
+        songListIndex[songListContextMenuIndex].name = newSongListName;
+        saveSongListIndex();
 
-        readSongList();
-        songlist[songListContextMenuCount].name = newSongListName;
-        saveSongList();
-
-        if (document.getElementById("menu_songlist_sl").children[songListContextMenuCount].classList.contains("menu-item-focused")) {
-            document.getElementById("wbv").reload();
+        let focusedId = document.getElementById("menu_songlist_sl").querySelector(".menu-item-focused").getAttribute("data-sl-id");
+        loadSonglistsMenu();
+        if (document.getElementById("menu_songlist_sl").children[songListContextMenuIndex].getAttribute("data-sl-id") == focusedId) {
+            document.getElementById("menu_songlist_sl").children[songListContextMenuIndex].click();
+        }
+        else {
+            document.getElementById("menu_songlist_sl").querySelector(`div[data-sl-id="${focusedId}"]`).classList.add("menu-item-focused");
         }
     });
     document.getElementById("delSongList_ok").addEventListener("click", () => {
-        let deletedSongListDom = document.getElementById("menu_songlist_sl").children[songListContextMenuCount];
+        let deletedSongListDom = document.getElementById("menu_songlist_sl").children[songListContextMenuIndex];
         if (deletedSongListDom.classList.contains("menu-item-focused")) {
             document.getElementById("menu_top_home").click();
         }
         deletedSongListDom.remove();
 
-        readSongList();
-        songlist.splice(songListContextMenuCount, 1);
-        saveSongList();
+        songListIndex.splice(songListContextMenuIndex, 1);
+        saveSongListIndex();
+
+        new AppDataFile(`SongLists/${deletedSongListDom.getAttribute("data-sl-id")}.json`).rmSync();
 
         ui.closeDialog(document.getElementById("delSongList"));
     });
@@ -205,17 +215,18 @@ window.addEventListener("load", () => {
         ev.preventDefault();
     });
     document.getElementById("menu").addEventListener("drop", (ev) => {
-        readSongList();
         for (let file of ev.dataTransfer.files) {
-            songlist.push(JSON.parse(fs.readFileSync(file.path)));
+            let orginal = JSON.parse(fs.readFileSync(file.path));
+            if (document.getElementById("menu_songlist_sl").querySelector(`div[data-sl-id="${orginal.id}"]`)) {
+                continue;
+            }
+            songListIndex.push({
+                id: orginal.id,
+                name: orginal.name
+            });
+            new AppDataFile(`SongLists/${orginal.id}.json`).writeObjectSync(orginal.songs);
         }
-        saveSongList();
-        readSongList();
+        saveSongListIndex();
         loadSonglistsMenu();
     });
 });
-
-function saveSongList() {
-    fs.writeFileSync(`${__datadir}\\songlist.json`, JSON.stringify(songlist), "utf-8");
-    songlist = undefined;
-};

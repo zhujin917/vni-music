@@ -8,7 +8,7 @@
     display: inline-flex;
     overflow: hidden;
     z-index: 2;
-    transition: all .2s;
+    transition: top .2s;
 }
 
 #lyric_left {

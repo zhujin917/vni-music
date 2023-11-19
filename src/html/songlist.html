@@ -9,11 +9,13 @@
     <script type="text/javascript" src="../ui/script.js"></script>
     <title>vni-music/SONGLIST</title>
     <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/animation.css">
     <link rel="stylesheet" type="text/css" href="../css/contextMenu.css">
     <link rel="stylesheet" type="text/css" href="../css/songlist/style.css">
     <script type="text/javascript" src="../js/script.js"></script>
     <script type="text/javascript" src="../js/contextMenu.js"></script>
     <script type="text/javascript" src="../js/songlist/script.js"></script>
+    <script type="text/javascript" src="../js/songlist/sort.js"></script>
     <script type="text/javascript" src="../js/songlist/shortkeys.js"></script>
 </head>
 
@@ -36,12 +38,28 @@
     <div id="list">
         <div id="list_top">
             <div class="content num"></div>
-            <div class="content title">标题</div>
-            <div class="content artist">艺术家</div>
-            <div class="content album">专辑</div>
+            <div class="content title" data-sort="title">
+                <span>标题</span>
+                <div class="sort-icon"></div>
+            </div>
+            <div class="content artist" data-sort="artist">
+                <span>艺术家</span>
+                <div class="sort-icon"></div>
+            </div>
+            <div class="content album" data-sort="album">
+                <span>专辑</span>
+                <div class="sort-icon"></div>
+            </div>
             <div class="content time">时长</div>
         </div>
         <div id="list_content"></div>
+        <div id="list_loading">
+            <svg class="loading" viewBox="0 0 16 16">
+                <circle class="circle1" cx="8px" cy="8px" r="7px"></circle>
+                <circle class="circle2" cx="8px" cy="8px" r="7px"></circle>
+            </svg>
+            <span>正在加载...</span>
+        </div>
     </div>
 </body>
 

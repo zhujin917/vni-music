@@ -150,6 +150,10 @@ function loadPlayList(restorePlayingPathParam) {
 
 let nxtLrcTs, nxtLrcCount;
 function playNow(songPath) {
+    if (!songPath) {
+        return;
+    }
+
     playing = true;
     player.src = songPath;
     player.play();

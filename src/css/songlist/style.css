@@ -84,53 +84,57 @@ body {
     width: calc(100% - 4px - 10px);
     margin-left: 10px;
 }
-.list-content {
+#list_content {
     padding-bottom: 12px;
+    display: none;
+    flex-direction: column;
+    flex-wrap: wrap;
 }
 #list_top .content {
     font-size: 15px;
     color: #aaa;
+    line-height: 30px;
+    border-radius: 4px;
 }
-.list-content .content {
+#list_content .content {
     font-size: 16px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.list-content .item-odd {
+#list_content .item-odd {
     background-color: #fafafa;
 }
-.list-content .item-playing {
+#list_content .item-playing {
     color: #fff !important;
     background: var(--theme-color) !important;
 }
-.list-content .item-focused {
+#list_content .item-focused {
     color: #333 !important;
     border-color: transparent !important;
     border-radius: 0 !important;
     background: #CCE8FF !important;
 }
-.list-content .item-focused .num img {
+#list_content .item-focused .num img {
     filter: none !important;
 }
 
-.list-content .item {
+#list_content .item {
     color: #333;
     padding: 4px 0;
     border-radius: 4px;
     border-style: solid;
     border-width: 2px 0;
     border-color: transparent;
-    transition: all .1s;
 }
-.list-content .item:hover {
+#list_content .item:hover {
+    background-color: rgb(0 0 0 / .05);
+}
+#list_content .item:active {
     background-color: rgb(0 0 0 / .1);
 }
-.list-content .item:active {
-    background-color: rgb(0 0 0 / .15);
-}
 
-#list_top, .list-content .item {
+#list_top, #list_content .item {
     width: 100%;
     display: inline-flex;
 }
@@ -142,7 +146,7 @@ body {
 #list .num {
     position: relative;
     width: 30px;
-    padding-right: 15px;
+    padding: 0 6px 0 0;
     text-align: right;
 }
 #list .num img {
@@ -156,16 +160,54 @@ body {
 }
 #list .title {
     flex: 2;
-    padding-right: 10px;
+    padding: 0 6px;
 }
 #list .artist {
     flex: 1;
-    padding-right: 10px;
+    padding: 0 6px;
 }
 #list .album {
     flex: 1;
-    padding-right: 10px;
+    padding: 0 6px;
 }
 #list .time {
-    width: 70px;
+    width: 60px;
+    padding: 0 0 0 6px;
+}
+
+#list_loading {
+    text-align: center;
+}
+#list_loading .loading {
+    transform: scale(.64);
+    vertical-align: middle;
+}
+#list_loading span {
+    vertical-align: middle;
+    font-size: 15px;
+}
+
+#list_top .title:hover,
+#list_top .artist:hover,
+#list_top .album:hover {
+    background-color: rgb(0 0 0 / .05);
+    color: #333;
+}
+#list_top .title:active,
+#list_top .artist:active,
+#list_top .album:active {
+    background-color: rgb(0 0 0 / .1);
+}
+#list_top .content .sort-icon,
+#list_top .content .sort-icon img {
+    height: 17px;
+    width: 17px;
+}
+#list_top .content .sort-icon {
+    display: inline-block;
+    vertical-align: middle;
+    transform: translateY(-2px);
+}
+#list_top .content .sort-icon img {
+    vertical-align: top;
 }
