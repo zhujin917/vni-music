@@ -21,131 +21,30 @@ function switchPlayingStatus(isPlaying) {
     }
 };
 
-function addToPlayList(list, isReplace, restorePlayingPathParam) {
+function addToPlayList(list, insertStart, isReplace) {
     if (isReplace) {
         playlist = [];
         playlistWater = [];
     }
-    list.forEach((s) => {
-        if (playlist.indexOf(s) != -1) {
-            return;
+    switch (insertStart) {
+        case "playing":
+            insertStart = playlist.indexOf(getCurrentSrc()) + 1;
+            break;
+        case "end":
+            insertStart = playlist.length;
+            break;
+    }
+    for (let i in playlist) {
+        if (list.indexOf(playlist[i]) != -1) {
+            playlist[i] = null;
+            playlistWater[i] = null;
         }
-        playlist.push(s);
-        playlistWater.push(0);
-    });
-    loadPlayList(restorePlayingPathParam);
-};
-
-let infoLoaded;
-let restorePlayingPath;
-function showPlayListContent() {
-    document.getElementById("playlist_content").remove();
-    document.getElementById("playlist_content_n").hidden = false;
-    document.getElementById("playlist_content_n").id = "playlist_content";
-
-    if (restorePlayingPath == undefined) {
-        return;
     }
-    let playingDom = document.querySelector(`div[data-songpath="${encodeURI(restorePlayingPath)}"]`);
-    if (playingDom == undefined) {
-        stopPlaying();
-        return;
-    }
-    playingDom.firstElementChild.innerHTML = `
-        <img src="../img/icon/acoustic.svg" />
-    `;
-    playingDom.classList.add("item-playing");
-};
-function loadPlayList(restorePlayingPathParam) {
-    restorePlayingPath = restorePlayingPathParam;
-
-    let listContentDom = document.createElement("div");
-    listContentDom.id = "playlist_content_n";
-    listContentDom.classList.add("playlist-content");
-    if (document.getElementById("playlist_content").innerHTML != "") {
-        listContentDom.hidden = true;
-    }
-    document.getElementById("playlist").appendChild(listContentDom);
-    document.getElementById("playlist_num").innerText = `共 ${playlist.length} 首`;
-
-    if (playlist.length == 0) {
-        showPlayListContent();
-        return;
-    }
-
-    let count = 0;
-    infoLoaded = 0;
-    playlist.forEach((songPath) => {
-        count += 1;
-        let d = document.createElement("div");
-        d.classList.add("item");
-        if (count % 2 == 1) {
-            d.classList.add("item-odd")
-        }
-        d.setAttribute("data-songnum", count);
-        d.setAttribute("data-songpath", encodeURI(songPath));
-        d.innerHTML = `
-            <div class="content num">${count}</div>
-            <div class="content title"></div>
-            <div class="content artist"></div>
-            <div class="content time"></div>
-        `;
-        d.addEventListener("dblclick", function () {
-            this.classList.remove("item-focused");
-            playNow(decodeURI(this.getAttribute("data-songpath")));
-        });
-        d.addEventListener("click", function (ev) {
-            if (ev.shiftKey && document.getElementsByClassName("item-focused").length == 1) {
-                let anotherFocusedNum = document.getElementsByClassName("item-focused")[0].getAttribute("data-songnum") - 1;
-                for (let i = Math.min(Number(anotherFocusedNum), this.getAttribute("data-songnum") - 1);
-                    i <= Math.max(Number(anotherFocusedNum), this.getAttribute("data-songnum") - 1); i += 1) {
-                    listContentDom.children[i].classList.add("item-focused");
-                }
-                return;
-            }
-            if (document.getElementsByClassName("item-focused").length == 1 && this.classList.contains("item-focused")) {
-                this.classList.remove("item-focused");
-                return;
-            }
-            let oldFocused = [];
-            if (!ev.ctrlKey) {
-                for (let dom of document.getElementsByClassName("item-focused")) {
-                    oldFocused.push(dom);
-                }
-                oldFocused.forEach((dom) => {
-                    dom.classList.remove("item-focused");
-                });
-            }
-            if (this.classList.contains("item-focused")) {
-                this.classList.remove("item-focused");
-                return;
-            }
-            this.classList.add("item-focused");
-        });
-        listContentDom.appendChild(d);
-
-        Electron.ipcRenderer.invoke("get-song-info", songPath).then((songInfo) => {
-            let qsList = document.querySelectorAll(`div[data-songpath="${encodeURI(songPath)}"]`);
-            for (let dom of qsList[qsList.length - 1].children) {
-                if (dom.classList.contains("title")) {
-                    dom.innerText = (songInfo.title == undefined) ? songPath.substring(songPath.lastIndexOf("\\") + 1) : songInfo.title;
-                }
-                else if (dom.classList.contains("artist") && songInfo.artist != undefined) {
-                    dom.innerText = songInfo.artist;
-                }
-                else if (dom.classList.contains("album") && songInfo.album != undefined) {
-                    dom.innerText = songInfo.album;
-                }
-                else if (dom.classList.contains("time") && songInfo.duration != undefined) {
-                    dom.innerText = sec2str(songInfo.duration);
-                }
-            }
-            infoLoaded += 1;
-            if (infoLoaded == playlist.length) {
-                showPlayListContent();
-            }
-        });
-    });
+    playlist.splice(insertStart, 0, ...list);
+    playlistWater.splice(insertStart, 0, ...(new Array(list.length).fill(0)));
+    playlist = playlist.filter(val => val !== null);
+    playlistWater = playlistWater.filter(val => val !== null);
+    loadPlayList();
 };
 
 let nxtLrcTs, nxtLrcCount;
@@ -222,7 +121,7 @@ function playNow(songPath) {
         playlistWater[i] += 1;
     }
     playlistWater[
-        Number(document.querySelector(`div[data-songpath="${encodeURI(songPath)}"]`).getAttribute("data-songnum")) - 1
+        Number(document.querySelector(`div[data-songpath="${encodeURI(songPath)}"]`).getAttribute("data-songnum"))
     ] = 0;
 };
 
@@ -271,7 +170,7 @@ player.addEventListener("play", function () {
 
     let oldPlayingDom = document.getElementsByClassName("item-playing");
     if (oldPlayingDom.length > 0) {
-        oldPlayingDom[0].firstElementChild.innerText = oldPlayingDom[0].getAttribute("data-songnum");
+        oldPlayingDom[0].firstElementChild.innerText = Number(oldPlayingDom[0].getAttribute("data-songnum")) + 1;
         oldPlayingDom[0].classList.remove("item-playing");
     }
 
@@ -454,6 +353,7 @@ document.getElementById("wbv").addEventListener("ipc-message", (ev) => {
     switch (ev.channel) {
         case "mousedown":
             switchPlayListStatus(false);
+            document.getElementById("player_right_volume").style.display = "none";
             break;
         case "mousemove":
             if (pagexDraggingProgressC == null) {
@@ -469,20 +369,20 @@ document.getElementById("wbv").addEventListener("ipc-message", (ev) => {
             pagexDraggingProgressC = null;
             break;
         case "play-dblclick":
-            addToPlayList(ev.args[0], true, ev.args[1]);
+            addToPlayList(ev.args[0], 0, true);
             playNow(ev.args[1]);
             break;
         case "play-all":
-            addToPlayList(ev.args[0], true, ev.args[0][0]);
+            addToPlayList(ev.args[0], 0, true);
             playNow(ev.args[0][0]);
             break;
         case "play-selected":
-            addToPlayList(ev.args[0], false, ev.args[0][0]);
+            addToPlayList(ev.args[0], "playing", false);
             playNow(ev.args[0][0]);
             break;
         case "add-all":
         case "add-selected":
-            addToPlayList(ev.args[0], false, getCurrentSrc());
+            addToPlayList(ev.args[0], (ev.channel == "add-all") ? "end" : "playing", false);
             switchPlayListStatus(true);
             setTimeout(() => {
                 document.getElementById("playlist_content").scrollTo({
@@ -497,11 +397,6 @@ document.getElementById("wbv").addEventListener("ipc-message", (ev) => {
     }
 });
 
-document.getElementById("player").addEventListener("mousedown", (ev) => {
-    ev.stopPropagation();
-    switchPlayListStatus(false);
-    document.getElementById("player_right_volume").style.display = "none";
-});
 document.getElementById("player_right_vol").onmousedown =
     document.getElementById("player_right_volume").onmousedown =
     (ev) => {
@@ -551,6 +446,9 @@ function switchPlayListStatus(stat) {
         document.getElementById("playlist").style.right = "0";
     }
 };
+document.getElementById("player_right_list").addEventListener("mousedown", (evt) => {
+    evt.stopPropagation();
+});
 document.getElementById("player_right_list").addEventListener("click", () => {
     switchPlayListStatus(document.getElementById("playlist").style.right != "0px");
 });
@@ -568,11 +466,12 @@ document.getElementById("wbv").addEventListener("did-finish-load", function () {
         });
     `);
 });
-document.body.addEventListener("mousedown", () => {
-    switchPlayListStatus(false);
-});
 document.getElementById("playlist").addEventListener("mousedown", (ev) => {
     ev.stopPropagation();
+});
+window.addEventListener("mousedown", () => {
+    switchPlayListStatus(false);
+    document.getElementById("player_right_volume").style.display = "none";
 });
 
 document.getElementById("playlist_clear").addEventListener("click", () => {

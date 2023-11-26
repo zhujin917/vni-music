@@ -31,11 +31,11 @@
     padding: 0;
     background-color: transparent;
     font-family: "codicon";
-    transition: all .1s;
+    transition: var(--button-transition);
     -webkit-app-region: none;
 }
 #titleBar_buttons_minimize:hover {
-    background-color: rgb(0 0 0 / .1);
+    background-color: var(--button-hover-color);
 }
 #titleBar_buttons_close:hover {
     color: #fff;

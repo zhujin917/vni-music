@@ -64,10 +64,10 @@ function setOverlayBackground(color) {
 };
 function switchWbvTo(link, itemdom) {
     if (itemdom != undefined) {
-        if (document.getElementsByClassName("menu-item-focused").length > 0) {
-            document.getElementsByClassName("menu-item-focused")[0].classList.remove("menu-item-focused");
+        if (document.getElementById("menu").getElementsByClassName("item-focused").length > 0) {
+            document.getElementById("menu").getElementsByClassName("item-focused")[0].classList.remove("item-focused");
         }
-        itemdom.classList.add("menu-item-focused");
+        itemdom.classList.add("item-focused");
     }
     document.getElementById("wbv").loadURL(path.join(__dirname, link));
 };

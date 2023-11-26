@@ -50,7 +50,7 @@ body {
     background-color: transparent;
     height: 100%;
     width: 45px;
-    transition: all .1s;
+    transition: var(--button-transition);
     -webkit-app-region: none;
 }
 #title_buttons button img {
@@ -59,10 +59,10 @@ body {
     margin-top: 2px;
 }
 #title_buttons button:hover {
-    background-color: rgb(0 0 0 / .1);
+    background-color: var(--button-hover-color);
 }
 #title_buttons button:active {
-    background-color: rgb(0 0 0 / .15);
+    background-color: var(--button-active-color);
 }
 #title_buttons_donate {
     display: inline-block;

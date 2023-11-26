@@ -4,8 +4,12 @@ let songListIndexFileObject = new AppDataFile("User/SongListIndex.json");
 function saveSongListIndex() {
     new AppDataFile("User/SongListIndex.json").writeObjectSync(songListIndex);
 };
-function readSongList(songListId) {
-    return new AppDataFile(`SongLists/${songListId}.json`).readObjectSync();
+async function readSongList(songListId) {
+    let obj = new AppDataFile(`SongLists/${songListId}.json`).readObjectSync();
+    if (typeof obj == "string") {
+        return await getFilesInDir(obj);
+    }
+    return obj;
 };
 
 if (songListIndexFileObject.existsSync()) {
@@ -16,78 +20,74 @@ else {
     saveSongListIndex();
 }
 
-let songListContextMenuIndex;
 function loadSonglistsMenu() {
-    document.getElementById("menu_songlist_sl").innerHTML = "";
-    songListIndex.forEach(sl => {
-        let d = document.createElement("div");
-        d.classList.add("menu-item");
-        d.innerText = sl.name;
-        d.setAttribute("data-sl-id", sl.id);
-        d.addEventListener("click", function () {
-            if (this.classList.contains("menu-item-focused")) {
-                return;
-            }
-            switchWbvTo(`songlist.html?id=${sl.id}&type=${sl.type}&name=${encodeURI(sl.name)}`, d);
-        });
-        d.addEventListener("contextmenu", function (evt) {
-            songListContextMenuIndex = Array.prototype.indexOf.call(document.getElementById("menu_songlist_sl").children, this);
-            new ContextMenu([
-                {
-                    label: "播放全部",
-                    click() {
-                        let songs = readSongList(document.getElementById("menu_songlist_sl").children[songListContextMenuIndex].getAttribute("data-sl-id"));
-                        addToPlayList(songs, true, songs[0]);
-                        playNow(songs[0]);
-                    }
-                }, {
-                    label: "添加到播放列表",
-                    click() {
-                        let songs = readSongList(document.getElementById("menu_songlist_sl").children[songListContextMenuIndex].getAttribute("data-sl-id"));
-                        addToPlayList(songs, false, getCurrentSrc());
-                        switchPlayListStatus(true);
-                        setTimeout(() => {
-                            document.getElementById("playlist_content").scrollTo({
-                                top: document.querySelector(`div[data-songpath="${encodeURI(songs[0])}"]`).offsetTop,
-                                behavior: "smooth"
-                            });
-                            if (!playing) {
-                                playNow(playlist[0]);
-                            }
-                        }, 300);
-                    }
-                }, {
-                    type: "separator"
-                }, {
-                    label: "向上移动",
-                    click() {
-                        let tmpSl = songListIndex[songListContextMenuIndex];
-                        let focusedId = document.getElementsByClassName("menu-item-focused")[0].getAttribute("data-sl-id");
-                        songListIndex.splice(songListContextMenuIndex, 1);
-                        songListIndex.splice(songListContextMenuIndex - 1, 0, tmpSl);
-                        saveSongListIndex();
-                        loadSonglistsMenu();
-                        if (focusedId) {
-                            document.querySelector(`div[data-sl-id="${focusedId}"]`).classList.add("menu-item-focused");
+    let elemList = document.getElementById("menu_songlist_sl").getElementsByClassName("item");
+    for (let i = 0; i < elemList.length; i += 1) {
+        let elem = elemList[i];
+        if (songListIndex.filter(item => item.id == elem.getAttribute("data-sl-id")).length == 0) {
+            elem.remove();
+            i -= 1;
+        }
+    }
+    songListIndex.forEach((sl, i) => {
+        let itemDom = document.getElementById("menu_songlist_sl").querySelector(`.item[data-sl-id="${sl.id}"]`);
+        if (itemDom) {
+            itemDom.style.order = i;
+            itemDom.setAttribute("data-sl-index", i);
+        }
+        else {
+            createSonglistsMenuItem(i, sl);
+        }
+    });
+};
+
+let songListContextMenuIndex;
+let songListDraggedDom = null;
+function createSonglistsMenuItem(index, sl) {
+    let d = document.createElement("div");
+    d.classList.add("item");
+    d.style.order = index;
+    d.setAttribute("data-sl-index", index);
+    d.setAttribute("data-sl-id", sl.id);
+    d.innerText = sl.name;
+    d.addEventListener("click", function () {
+        if (this.classList.contains("item-focused")) {
+            return;
+        }
+        switchWbvTo(`songlist.html?id=${sl.id}&type=${sl.type}&name=${encodeURI(sl.name)}`, d);
+    });
+    d.addEventListener("contextmenu", function (evt) {
+        songListContextMenuIndex = Array.prototype.indexOf.call(document.getElementById("menu_songlist_sl").children, this);
+        new ContextMenu([
+            {
+                label: "播放全部",
+                async click() {
+                    let songs = await readSongList(document.getElementById("menu_songlist_sl").children[songListContextMenuIndex].getAttribute("data-sl-id"));
+                    addToPlayList(songs, 0, true);
+                    playNow(songs[0]);
+                }
+            }, {
+                label: "下一首播放",
+                async click() {
+                    let songs = await readSongList(document.getElementById("menu_songlist_sl").children[songListContextMenuIndex].getAttribute("data-sl-id"));
+                    addToPlayList(songs, "playing", false);
+                    switchPlayListStatus(true);
+                    setTimeout(() => {
+                        document.getElementById("playlist_content").scrollTo({
+                            top: document.querySelector(`div[data-songpath="${encodeURI(songs[0])}"]`).offsetTop,
+                            behavior: "smooth"
+                        });
+                        if (!playing) {
+                            playNow(playlist[0]);
                         }
-                    }
-                }, {
-                    label: "向下移动",
-                    click() {
-                        let tmpSl = songListIndex[songListContextMenuIndex];
-                        let focusedId = document.getElementsByClassName("menu-item-focused")[0].getAttribute("data-sl-id");
-                        songListIndex.splice(songListContextMenuIndex, 1);
-                        songListIndex.splice(songListContextMenuIndex + 1, 0, tmpSl);
-                        saveSongListIndex();
-                        loadSonglistsMenu();
-                        if (focusedId) {
-                            document.querySelector(`div[data-sl-id="${focusedId}"]`).classList.add("menu-item-focused");
-                        }
-                    }
-                }, {
-                    type: "separator"
-                }, {
-                    label: "导出",
+                    }, 300);
+                }
+            }, {
+                type: "separator"
+            }, {
+                label: "导出",
+                submenu: [{
+                    label: "此歌单",
                     click() {
                         let targetSlDom = document.getElementById("menu_songlist_sl").children[songListContextMenuIndex];
                         let outPath = Electron.ipcRenderer.sendSync("show-open-dialog-sync", {
@@ -106,7 +106,7 @@ function loadSonglistsMenu() {
                         ui.alert("导出操作已完成。", `已完成对歌单「${targetSlDom.innerText}」的索引导出。`);
                     }
                 }, {
-                    label: "导出全部",
+                    label: "所有歌单",
                     click() {
                         let outPath = Electron.ipcRenderer.sendSync("show-open-dialog-sync", {
                             title: "导出全部歌单的索引",
@@ -125,9 +125,10 @@ function loadSonglistsMenu() {
                         });
                         ui.alert("导出操作已完成。", "已完成对全部歌单的索引导出。");
                     }
-                }, {
-                    type: "separator"
-                }, {
+                }]
+            }, {
+                label: "操作",
+                submenu: [{
                     label: "重命名",
                     click() {
                         document.getElementById("renSongList_name").value = document.getElementById("menu_songlist_sl").children[songListContextMenuIndex].innerText;
@@ -141,11 +142,49 @@ function loadSonglistsMenu() {
                     click() {
                         ui.openDialog(document.getElementById("delSongList"));
                     }
-                }
-            ]).popup([evt.clientX, evt.clientY]);
-        });
-        document.getElementById("menu_songlist_sl").appendChild(d);
+                }]
+            }
+            // }, {
+            //     type: "separator"
+            // }, {
+            //     label: "属性"
+            // }
+        ]).popup([evt.clientX, evt.clientY]);
     });
+    d.draggable = true;
+    bindDragEventsForListItemDom(d, {
+        focusable: false,
+        indexAttr: "data-sl-index"
+    });
+    d.addEventListener("dragstart", (evt) => {
+        songListDraggedDom = evt.target;
+    });
+    d.addEventListener("drop", function (evt) {
+        let count = (evt.offsetY < this.offsetHeight / 2) ? 0 : 1;
+        if (evt.dataTransfer.files.length > 0) {
+            for (let file of evt.dataTransfer.files) {
+                let orginal = JSON.parse(fs.readFileSync(file.path));
+                if (document.getElementById("menu_songlist_sl").querySelector(`div[data-sl-id="${orginal.id}"]`)) {
+                    continue;
+                }
+                songListIndex.push({
+                    id: orginal.id,
+                    name: orginal.name
+                });
+                new AppDataFile(`SongLists/${orginal.id}.json`).writeObjectSync(orginal.songs);
+            }
+        }
+        else if (songListDraggedDom) {
+            let targetObj = songListIndex[Number(songListDraggedDom.getAttribute("data-sl-index"))];
+            songListIndex[Number(songListDraggedDom.getAttribute("data-sl-index"))] = null;
+            songListIndex.splice(Number(this.getAttribute("data-sl-index")) + count, 0, targetObj);
+            songListIndex = songListIndex.filter(item => item !== null);
+        }
+        songListDraggedDom = null;
+        saveSongListIndex();
+        loadSonglistsMenu();
+    });
+    document.getElementById("menu_songlist_sl").appendChild(d);
 };
 
 window.addEventListener("load", () => {
@@ -187,18 +226,18 @@ window.addEventListener("load", () => {
         songListIndex[songListContextMenuIndex].name = newSongListName;
         saveSongListIndex();
 
-        let focusedId = document.getElementById("menu_songlist_sl").querySelector(".menu-item-focused").getAttribute("data-sl-id");
+        let focusedId = document.getElementById("menu_songlist_sl").querySelector(".item-focused").getAttribute("data-sl-id");
         loadSonglistsMenu();
         if (document.getElementById("menu_songlist_sl").children[songListContextMenuIndex].getAttribute("data-sl-id") == focusedId) {
             document.getElementById("menu_songlist_sl").children[songListContextMenuIndex].click();
         }
         else {
-            document.getElementById("menu_songlist_sl").querySelector(`div[data-sl-id="${focusedId}"]`).classList.add("menu-item-focused");
+            document.getElementById("menu_songlist_sl").querySelector(`div[data-sl-id="${focusedId}"]`).classList.add("item-focused");
         }
     });
     document.getElementById("delSongList_ok").addEventListener("click", () => {
         let deletedSongListDom = document.getElementById("menu_songlist_sl").children[songListContextMenuIndex];
-        if (deletedSongListDom.classList.contains("menu-item-focused")) {
+        if (deletedSongListDom.classList.contains("item-focused")) {
             document.getElementById("menu_top_home").click();
         }
         deletedSongListDom.remove();
@@ -209,24 +248,5 @@ window.addEventListener("load", () => {
         new AppDataFile(`SongLists/${deletedSongListDom.getAttribute("data-sl-id")}.json`).rmSync();
 
         ui.closeDialog(document.getElementById("delSongList"));
-    });
-
-    document.getElementById("menu").addEventListener("dragover", (ev) => {
-        ev.preventDefault();
-    });
-    document.getElementById("menu").addEventListener("drop", (ev) => {
-        for (let file of ev.dataTransfer.files) {
-            let orginal = JSON.parse(fs.readFileSync(file.path));
-            if (document.getElementById("menu_songlist_sl").querySelector(`div[data-sl-id="${orginal.id}"]`)) {
-                continue;
-            }
-            songListIndex.push({
-                id: orginal.id,
-                name: orginal.name
-            });
-            new AppDataFile(`SongLists/${orginal.id}.json`).writeObjectSync(orginal.songs);
-        }
-        saveSongListIndex();
-        loadSonglistsMenu();
     });
 });

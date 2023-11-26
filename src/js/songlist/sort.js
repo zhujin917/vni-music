@@ -25,25 +25,29 @@ window.addEventListener("load", () => {
 
             for (let elem of this.parentElement.getElementsByClassName("sort-icon")) {
                 if (elem.parentElement.getAttribute("data-sort") != sortMode.type) {
-                    elem.innerHTML = "";
+                    elem.style.display = "";
                     continue;
                 }
                 switch (sortMode.order) {
+                    case 0:
+                        elem.style.display = "";
+                        break;
                     case -1:
-                        this.querySelector(".sort-icon").innerHTML = `<img src="../img/icon/sort-amount-down.svg">`;
+                        elem.style.display = "inline-block";
+                        elem.src = "../img/icon/sort-amount-down.svg";
                         break;
                     case 1:
-                        this.querySelector(".sort-icon").innerHTML = `<img src="../img/icon/sort-amount-up.svg">`;
-                        break;
-                    case 0:
-                        this.querySelector(".sort-icon").innerHTML = "";
+                        elem.style.display = "inline-block";
+                        elem.src = "../img/icon/sort-amount-up.svg";
                         break;
                 }
             }
 
             if (sortMode.order == 0) {
+                sortMode.type = "default";
                 songList = [...unsortedSongList];
                 sortSongList();
+                setDraggable(songListType == "files");
                 return;
             }
             songList.sort((songPathA, songPathB) => {
@@ -52,5 +56,6 @@ window.addEventListener("load", () => {
                 return textA.localeCompare(textB) * sortMode.order;
             });
             sortSongList();
+            setDraggable(false);
         };
 });

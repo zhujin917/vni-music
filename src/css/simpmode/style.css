@@ -48,13 +48,13 @@ button {
     padding: 0;
     background-color: transparent;
     margin: 0 2px;
-    transition: all .1s;
+    transition: var(--button-transition);
 }
 button:hover {
-    background-color: rgb(0 0 0 / .1);
+    background-color: var(--button-hover-color);
 }
 button:active {
-    background-color: rgb(0 0 0 / .15);
+    background-color: var(--button-active-color);
 }
 #play {
     width: 30px;

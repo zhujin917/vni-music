@@ -10,17 +10,20 @@
     <title>维念音乐</title>
     <link rel="stylesheet" type="text/css" href="../css/style.css">
     <link rel="stylesheet" type="text/css" href="../css/contextMenu.css">
+    <link rel="stylesheet" type="text/css" href="../css/list.css">
     <link rel="stylesheet" type="text/css" href="../css/main/style.css">
-    <link rel="stylesheet" type="text/css" href="../css/main/player.css">
     <link rel="stylesheet" type="text/css" href="../css/main/menu.css">
+    <link rel="stylesheet" type="text/css" href="../css/main/player.css">
     <link rel="stylesheet" type="text/css" href="../css/main/playlist.css">
     <link rel="stylesheet" type="text/css" href="../css/main/lyric.css">
     <script type="text/javascript" src="../js/script.js"></script>
     <script type="text/javascript" src="../js/contextMenu.js"></script>
+    <script type="text/javascript" src="../js/list.js"></script>
     <script type="text/javascript" src="../js/main/script.js"></script>
     <script type="text/javascript" src="../js/main/songlist.js"></script>
     <script type="text/javascript" src="../js/main/player.js" defer></script>
-    <script type="text/javascript" src="../js/main/shortkeys.js" defer></script>
+    <script type="text/javascript" src="../js/main/playlist.js" defer></script>
+    <script type="text/javascript" src="../js/main/shortkeys.js"></script>
 </head>
 
 <body>
@@ -99,7 +102,7 @@
             <div class="content artist">艺术家</div>
             <div class="content time">时长</div>
         </div>
-        <div id="playlist_content"></div>
+        <div id="playlist_content" class="list"></div>
     </div>
     <!--歌词页-->
     <div id="lyric">
@@ -118,15 +121,15 @@
     </div>
     <!--侧边栏-->
     <div id="menu">
-        <div id="menu_top" class="menu-class">
-            <div id="menu_top_home" class="menu-item menu-item-focused">主页</div>
+        <div id="menu_top" class="part">
+            <div id="menu_top_home" class="item item-focused">主页</div>
         </div>
-        <div id="menu_songlist" class="menu-class">
-            <p class="menu-title">歌单</p>
-            <button id="menu_songlist_add" class="menu-btn">
+        <div id="menu_songlist" class="part">
+            <p class="title">歌单</p>
+            <button id="menu_songlist_add" class="btn">
                 <img src="../img/icon/plus.svg" />
             </button>
-            <div id="menu_songlist_sl"></div>
+            <div id="menu_songlist_sl" class="list"></div>
         </div>
     </div>
     <!--内容窗-->

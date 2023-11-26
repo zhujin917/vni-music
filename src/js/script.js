@@ -49,7 +49,7 @@ new AppDataDir("User").makeSync();
 new AppDataDir("SongLists").makeSync();
 
 window.addEventListener("dragstart", (ev) => {
-    if (ev.target.getAttribute("data-songpath") != null) {
+    if (ev.target.getAttribute("data-songpath") || ev.target.getAttribute("data-sl-id")) {
         return;
     }
     ev.preventDefault();
@@ -65,4 +65,21 @@ function sec2str(sec) {
 
 function getIPictureBase64(picture) {
     return `data:${picture.format};base64,${picture.data.toString("base64")}`;
+};
+
+function getFilesInDir(dirPath) {
+    return new Promise(resolve => {
+        fs.promises.readdir(dirPath, { withFileTypes: true }).then(dirents => {
+            Promise.allSettled(dirents.map(dirent => new Promise(resolve => {
+                if (dirent.isFile()) {
+                    resolve(path.join(dirPath, dirent.name));
+                }
+                else if (dirent.isDirectory()) {
+                    getFilesInDir(path.join(dirPath, dirent.name)).then(resolve);
+                }
+            }))).then(results => resolve(
+                results.reduce((all, result) => result.status == "fulfilled" ? all.concat(result.value) : all, [])
+            ));
+        });
+    });
 };

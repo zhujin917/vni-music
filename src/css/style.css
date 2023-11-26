@@ -1,6 +1,14 @@
-:root {
-    --theme-color: linear-gradient(270deg, #0078d4, #1e9fff);
+body {
+    --theme-color: linear-gradient(270deg, var(--theme-accent-color), #1e9fff);
+    --theme-accent-color: #0078d4;
+    --button-hover-color: rgb(0 0 0 / .1);
+    --button-active-color: rgb(0 0 0 / .15);
+    --button-transition: background-color .1s;
+    --list-item-hover-color: rgb(0 0 0 / .05);
+    --list-item-active-color: rgb(0 0 0 / .075);
+    --list-item-selected-color: #CCE8FF;
 }
+
 html, body {
     width: 100%;
     height: 100%;

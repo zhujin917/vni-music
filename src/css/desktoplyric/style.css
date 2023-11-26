@@ -15,7 +15,7 @@
     top: 10px;
     width: 100%;
     height: 34px;
-    transition: all .2s;
+    transition: opacity .2s;
 }
 .locked .header {
     opacity: 0 !important;
@@ -27,13 +27,14 @@
     background-color: transparent;
     border: none;
     border-radius: 4px;
+    transition: var(--button-transition);
     -webkit-app-region: none;
 }
 .header button:hover {
-    background-color: rgb(0 0 0 / .1);
+    background-color: var(--button-hover-color);
 }
 .header button:active {
-    background-color: rgb(0 0 0 / .15);
+    background-color: var(--button-active-color);
 }
 
 .header .left {

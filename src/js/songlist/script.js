@@ -74,94 +74,104 @@ function createListContentItem(index, songPath) {
                     Electron.ipcRenderer.sendToHost("play-selected", getSelectedSongPath());
                 }
             }, {
-                label: "添加到播放列表",
+                label: "下一首播放",
                 click() {
                     Electron.ipcRenderer.sendToHost("add-selected", getSelectedSongPath());
                 }
             }, {
                 type: "separator"
             }, {
+                label: "添加到歌单",
+                submenu: (() => {
+                    let result = [];
+                    for (let sl of new AppDataFile("User/SongListIndex.json").readObjectSync()) {
+                        if (sl.id == songListId) {
+                            continue;
+                        }
+                        result.push({
+                            label: sl.name,
+                            click() {
+                                if (sl.type == "folder") {
+                                    let outPath = new AppDataFile(`SongLists/${sl.id}.json`).readObjectSync();
+                                    getSelectedSongPath().forEach((srcPath) => {
+                                        fs.promises.copyFile(srcPath, path.join(outPath, srcPath.substring(srcPath.lastIndexOf("\\") + 1)));
+                                    })
+                                }
+                                else if (sl.type == "files") {
+                                    let f = new AppDataFile(`SongLists/${sl.id}.json`);
+                                    let songs = f.readObjectSync();
+                                    songs = songs.concat(getSelectedSongPath());
+                                    f.writeObjectSync(songs);
+                                }
+                            }
+                        });
+                    }
+                    return result;
+                })()
+            }, {
                 label: "搜索歌词",
                 click() {
                     Electron.ipcRenderer.send("mp3-modify", getSelectedSongPath());
                 }
-            }
+            }, ...((getSelectedSongPath().length == 1) ? [{
+                type: "separator"
+            }, {
+                label: "文件",
+                submenu: [
+                    {
+                        label: "另存为",
+                        click() {
+                            let srcPath = getSelectedSongPath()[0];
+                            let outPath = Electron.ipcRenderer.sendSync("show-save-dialog-sync", {
+                                title: "另存为",
+                                buttonLabel: "保存",
+                                defaultPath: srcPath,
+                                filters: [{
+                                    name: "目标文件格式",
+                                    extensions: [srcPath.substring(srcPath.lastIndexOf(".") + 1)]
+                                }],
+                                properties: ["dontAddToRecent"]
+                            });
+                            if (!outPath || outPath == srcPath) {
+                                return;
+                            }
+                            fs.promises.copyFile(srcPath, outPath);
+                        }
+                    }, {
+                        label: "打开文件位置",
+                        click() {
+                            Electron.shell.showItemInFolder(getSelectedSongPath()[0]);
+                        }
+                    }, {
+                        label: "复制文件地址",
+                        click() {
+                            Electron.clipboard.writeText(`"${getSelectedSongPath()[0]}"`);
+                        }
+                    }
+                    // }, {
+                    //     label: "属性"
+                    // }
+                ]
+            }] : [])
         ]).popup([evt.clientX, evt.clientY]);
     });
     s.addEventListener("dblclick", function () {
         this.classList.remove("item-focused");
         Electron.ipcRenderer.sendToHost("play-dblclick", songList, decodeURI(this.getAttribute("data-songpath")));
     });
-    s.addEventListener("click", function (ev) {
-        if (ev.shiftKey && document.getElementsByClassName("item-focused").length == 1) {
-            let anotherFocusedNum = document.getElementsByClassName("item-focused")[0].getAttribute("data-songnum");
-            for (let i = Math.min(Number(anotherFocusedNum), this.getAttribute("data-songnum"));
-                i <= Math.max(Number(anotherFocusedNum), this.getAttribute("data-songnum")); i += 1) {
-                document.getElementById("list_content").children[i].classList.add("item-focused");
-            }
-            return;
-        }
-        if (document.getElementsByClassName("item-focused").length == 1 && this.classList.contains("item-focused")) {
-            this.classList.remove("item-focused");
-            return;
-        }
-        let oldFocused = [];
-        if (!ev.ctrlKey) {
-            for (let dom of document.getElementsByClassName("item-focused")) {
-                oldFocused.push(dom);
-            }
-            oldFocused.forEach((dom) => {
-                dom.classList.remove("item-focused");
-            });
-        }
-        if (this.classList.contains("item-focused")) {
-            this.classList.remove("item-focused");
-            return;
-        }
-        this.classList.add("item-focused");
-    });
     s.draggable = (songListType == "files");
-    s.addEventListener("dragover", function (ev) {
-        ev.preventDefault();
-        let isUpperPart = ev.offsetY < this.offsetHeight / 2;
-        this.style.borderRadius = "0";
-        this.style.borderBottomColor = isUpperPart ? "transparent" : "#0078d4";
-        let previousElement = getPreviousItemDom(this);
-        if (previousElement) {
-            previousElement.style.borderRadius = "0";
-            previousElement.style.borderBottomColor = isUpperPart ? "#0078d4" : "transparent";
-        }
-        else if (isUpperPart) {
-            this.style.borderTopColor = "#0078d4";
-        }
-        else {
-            this.style.borderTopColor = "transparent";
-        }
+    bindDragEventsForListItemDom(s, {
+        focusable: true,
+        indexAttr: "data-songnum"
     });
-    s.addEventListener("dragleave", function () {
-        this.style.borderRadius = "";
-        this.style.borderColor = "";
-        let previousElement = getPreviousItemDom(this);
-        if (previousElement) {
-            previousElement.style.borderRadius = "";
-            previousElement.style.borderColor = "";
-        }
+    s.addEventListener("dragstart", (ev) => {
+        draggedDom = ev.target;
     });
     s.addEventListener("drop", function (ev) {
-        ev.stopPropagation();
-        this.style.borderRadius = "";
-        this.style.borderColor = "transparent";
-        let previousElement = getPreviousItemDom(this);
-        if (previousElement) {
-            previousElement.style.borderRadius = "";
-            previousElement.style.borderColor = "transparent";
-        }
-
         if (this.classList.contains("item-focused")) {
             draggedDom = null;
             return;
         }
-
         let count = (ev.offsetY < this.offsetHeight / 2) ? 0 : 1;
         if (ev.dataTransfer.files.length > 0) {
             for (let file of ev.dataTransfer.files) {
@@ -187,7 +197,7 @@ function createListContentItem(index, songPath) {
                 }];
             }
             else {
-                for (let focusedDom of document.getElementsByClassName("item-focused")) {
+                for (let focusedDom of document.getElementById("list_content").getElementsByClassName("item-focused")) {
                     focusedSong.push({
                         "num": Number(focusedDom.getAttribute("data-songnum")),
                         "path": decodeURI(focusedDom.getAttribute("data-songpath"))
@@ -203,12 +213,8 @@ function createListContentItem(index, songPath) {
             });
             songList = songList.filter(item => item !== null);
         }
-
         draggedDom = null;
         saveSongList();
-    });
-    s.addEventListener("dragstart", (ev) => {
-        draggedDom = ev.target;
     });
     document.getElementById("list_content").appendChild(s);
 
@@ -268,6 +274,12 @@ function sortSongList() {
             if (!isNaN(Number(itemDom.querySelector(".num").innerHTML))) {
                 itemDom.querySelector(".num").innerHTML = i + 1;
             }
+            if ((i + 1) % 2 == 1) {
+                itemDom.classList.add("item-odd");
+            }
+            else {
+                itemDom.classList.remove("item-odd");
+            }
             itemDom.style.order = i;
             itemDom.setAttribute("data-songnum", i);
         }
@@ -295,8 +307,10 @@ function updateInfoPic() {
     });
 };
 
-function getPreviousItemDom(elem) {
-    return document.getElementById("list_content").querySelector(`.item[data-songnum="${Number(elem.getAttribute("data-songnum")) - 1}"]`);
+function setDraggable(draggable) {
+    for (let elem of document.getElementById("list_content").getElementsByClassName("item")) {
+        elem.draggable = draggable;
+    }
 };
 
 let contextMenuDom = null;
@@ -306,7 +320,7 @@ function getSelectedSongPath() {
         songsl = [decodeURI(contextMenuDom.getAttribute("data-songpath"))];
     }
     else {
-        for (let focusedDom of document.getElementsByClassName("item-focused")) {
+        for (let focusedDom of document.getElementById("list_content").getElementsByClassName("item-focused")) {
             songsl.push(decodeURI(focusedDom.getAttribute("data-songpath")));
         }
     }
@@ -350,20 +364,3 @@ Electron.ipcRenderer.on("playing-song", (event, songPath) => {
     playingDom.firstElementChild.innerHTML = `<img src="../img/icon/acoustic.svg" />`;
     playingDom.classList.add("item-playing");
 });
-
-function getFilesInDir(dirPath) {
-    return new Promise(resolve => {
-        fs.promises.readdir(dirPath, { withFileTypes: true }).then(dirents => {
-            Promise.allSettled(dirents.map(dirent => new Promise(resolve => {
-                if (dirent.isFile()) {
-                    resolve(path.join(dirPath, dirent.name));
-                }
-                else if (dirent.isDirectory()) {
-                    getFilesInDir(path.join(dirPath, dirent.name)).then(resolve);
-                }
-            }))).then(results => resolve(
-                results.reduce((all, result) => result.status == "fulfilled" ? all.concat(result.value) : all, [])
-            ));
-        });
-    });
-};

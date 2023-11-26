@@ -41,22 +41,22 @@
 .ui-btn {
     border: none;
     color: #000;
-    background: #ededed;
+    background-color: #ededed;
     font-size: 15px;
     padding: 5px 15px;
     min-width: 80px;
     border-radius: 4px;
-    transition: all .1s;
+    transition: var(--button-transition);
 }
 .ui-btn-colored {
     color: #fff !important;
     background: var(--theme-color) !important;
 }
 .ui-btn:hover {
-    filter: brightness(.95);
+    background-color: var(--button-hover-color);
 }
 .ui-btn:active {
-    filter: brightness(.9);
+    background-color: var(--button-active-color);
 }
 .ui-input {
     background-color: #ededed;

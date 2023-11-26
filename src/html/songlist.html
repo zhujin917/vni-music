@@ -11,9 +11,13 @@
     <link rel="stylesheet" type="text/css" href="../css/style.css">
     <link rel="stylesheet" type="text/css" href="../css/animation.css">
     <link rel="stylesheet" type="text/css" href="../css/contextMenu.css">
+    <link rel="stylesheet" type="text/css" href="../css/list.css">
     <link rel="stylesheet" type="text/css" href="../css/songlist/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/songlist/info.css">
+    <link rel="stylesheet" type="text/css" href="../css/songlist/list.css">
     <script type="text/javascript" src="../js/script.js"></script>
     <script type="text/javascript" src="../js/contextMenu.js"></script>
+    <script type="text/javascript" src="../js/list.js"></script>
     <script type="text/javascript" src="../js/songlist/script.js"></script>
     <script type="text/javascript" src="../js/songlist/sort.js"></script>
     <script type="text/javascript" src="../js/songlist/shortkeys.js"></script>
@@ -40,19 +44,19 @@
             <div class="content num"></div>
             <div class="content title" data-sort="title">
                 <span>标题</span>
-                <div class="sort-icon"></div>
+                <img class="sort-icon">
             </div>
             <div class="content artist" data-sort="artist">
                 <span>艺术家</span>
-                <div class="sort-icon"></div>
+                <img class="sort-icon">
             </div>
             <div class="content album" data-sort="album">
                 <span>专辑</span>
-                <div class="sort-icon"></div>
+                <img class="sort-icon">
             </div>
             <div class="content time">时长</div>
         </div>
-        <div id="list_content"></div>
+        <div id="list_content" class="list"></div>
         <div id="list_loading">
             <svg class="loading" viewBox="0 0 16 16">
                 <circle class="circle1" cx="8px" cy="8px" r="7px"></circle>

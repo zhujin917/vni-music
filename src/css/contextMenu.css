@@ -1,6 +1,11 @@
+@font-face {
+    font-family: codicon;
+    src: url("../font/codicon.ttf");
+}
+
 .context-menu {
     position: absolute;
-    background: rgb(250 250 250 / .75);
+    background-color: rgb(250 250 250 / .75);
     backdrop-filter: blur(15px);
     top: 22px;
     width: fit-content;
@@ -12,32 +17,46 @@
     transition: opacity .2s;
     opacity: 0;
 }
-.context-menu-item {
+.context-menu .item {
     position: relative;
     padding: 3px 24px 4px 12px;
     font-size: 13px;
-    background: transparent;
+    background-color: transparent;
     color: #000;
     border-radius: 4px;
     white-space: nowrap;
 }
-.context-menu-item:hover {
-    background: #4695fe;
+.context-menu .item:hover, .context-menu .item-focused {
+    background-color: #4695fe;
     color: #fff;
 }
-.context-menu-item:active {
+.context-menu .item:active {
     opacity: .8;
 }
-.context-menu-separator {
+.context-menu .separator {
     margin: 5px 12px;
     border: none;
     border-top: solid 1px rgb(0 0 0 / .15);
 }
-.context-menu-disabled {
+.context-menu .disabled {
     color: rgb(0 0 0 / .5) !important;
-    background: transparent !important;
+    background-color: transparent !important;
     opacity: 1 !important;
 }
+
+.context-menu .sub {
+    padding-right: 40px;
+}
+.context-menu .sub::after {
+    content: "\eab6";
+    font-family: codicon;
+    font-size: 16px;
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
 #context-menu-mask {
     position: fixed;
     left: 0;

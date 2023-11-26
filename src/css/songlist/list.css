@@ -1,0 +1,109 @@
+#list {
+    position: relative;
+    min-height: calc(100% - 200px);
+    width: calc(100% - 4px - 10px);
+    margin-left: 10px;
+}
+#list_content {
+    padding-bottom: 12px;
+    display: none;
+}
+
+#list_top {
+    width: 100%;
+    display: inline-flex;
+}
+#list_top .content {
+    display: inline-block;
+    vertical-align: top;
+    font-size: 15px;
+    color: #aaa;
+    line-height: 30px;
+    border-radius: 4px;
+}
+
+#list_content .item {
+    padding: 4px 0;
+}
+#list_content .item-odd {
+    background-color: #fafafa;
+}
+#list_content .item-playing {
+    color: #fff !important;
+    background: var(--theme-color) !important;
+}
+#list_content .item-focused {
+    color: #333 !important;
+    border-color: transparent !important;
+    border-radius: 0 !important;
+    background: var(--list-item-selected-color) !important;
+}
+#list_content .item-focused .num img {
+    filter: none !important;
+}
+#list_content .item .content {
+    font-size: 16px;
+}
+
+#list .num {
+    position: relative;
+    width: 30px;
+    padding: 0 6px 0 0;
+    text-align: right;
+}
+#list .num img {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    filter: brightness(100);
+}
+#list .title {
+    flex: 2;
+    padding: 0 6px;
+}
+#list .artist {
+    flex: 1;
+    padding: 0 6px;
+}
+#list .album {
+    flex: 1;
+    padding: 0 6px;
+}
+#list .time {
+    width: 60px;
+    padding: 0 0 0 6px;
+}
+
+#list_loading {
+    text-align: center;
+}
+#list_loading .loading {
+    transform: scale(.64);
+    vertical-align: middle;
+}
+#list_loading span {
+    vertical-align: middle;
+    font-size: 15px;
+}
+
+#list_top .title:hover,
+#list_top .artist:hover,
+#list_top .album:hover {
+    background-color: var(--list-item-hover-color);
+    color: #333;
+}
+#list_top .title:active,
+#list_top .artist:active,
+#list_top .album:active {
+    background-color: var(--list-item-active-color);
+}
+#list_top .content .sort-icon {
+    height: 15px;
+    width: 15px;
+    vertical-align: middle;
+    transform: translateY(-1px);
+    display: none;
+}

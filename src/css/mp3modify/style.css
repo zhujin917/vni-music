@@ -72,12 +72,6 @@
     font-size: 15px;
     border-radius: 4px;
 }
-#list_content .item:hover {
-    background-color: rgb(0 0 0 / .05);
-}
-#list_content .item:active {
-    background-color: rgb(0 0 0 / .1);
-}
 #list_content .item-odd {
     background-color: #fafafa;
 }

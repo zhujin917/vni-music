@@ -61,6 +61,9 @@ Electron.ipcMain.on("set-overlay-background", (event, color) => {
 Electron.ipcMain.on("show-open-dialog-sync", (event, options) => {
     event.returnValue = Electron.dialog.showOpenDialogSync(options);
 });
+Electron.ipcMain.on("show-save-dialog-sync", (event, options) => {
+    event.returnValue = Electron.dialog.showSaveDialogSync(options);
+});
 Electron.ipcMain.on("window-role", (event, role) => {
     let win = Electron.BrowserWindow.fromWebContents(event.sender);
     switch (role) {

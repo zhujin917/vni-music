@@ -58,10 +58,10 @@
     margin-right: 5px;
 }
 #lyric_right_c .lrc:hover {
-    background-color: rgba(0 0 0 / .1);
+    background-color: var(--button-hover-color);
 }
 #lyric_right_c .lrc:active {
-    background-color: rgba(0 0 0 / .15);
+    background-color: var(--button-active-color);
 }
 #lyric_right_c .lrc:first-child {
     margin-top: calc((100vh - 60px - 80px - 100px) * 0.25);

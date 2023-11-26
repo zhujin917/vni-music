@@ -9,7 +9,7 @@
 }
 .loading .circle2 {
     animation: spin-infinite 2s linear infinite;
-    stroke: #0078d4;
+    stroke: var(--theme-accent-color);
     fill: none;
     stroke-width: 2px;
     stroke-linecap: round;
