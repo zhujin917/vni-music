@@ -1,7 +1,3 @@
-let sortMode = {
-    type: "default",
-    order: 0
-};
 let unsortedSongList;
 
 window.addEventListener("load", () => {
@@ -9,6 +5,10 @@ window.addEventListener("load", () => {
         = document.getElementById("list_top").querySelector(".artist").onclick
         = document.getElementById("list_top").querySelector(".album").onclick
         = function () {
+            if (!songListContentLoaded) {
+                return;
+            }
+
             if (sortMode.type != this.getAttribute("data-sort")) {
                 sortMode.type = this.getAttribute("data-sort");
                 sortMode.order = 1;

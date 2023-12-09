@@ -86,13 +86,8 @@ Electron.ipcMain.handle("get-song-info", async (event, songPath) => {
 });
 
 // Lyric API
-Electron.ipcMain.on("get-id3-lyric", (event, songPath, callback) => {
-    nodeId3.Promise.read(songPath).then((value) => {
-        event.sender.executeJavaScript(`(${callback
-            .replace("songPath", `songPath=\`${songPath.replaceAll("\\", "\\\\")}\``)
-            .replace("lyric", `lyric=\`${JSON.stringify(value.synchronisedLyrics)}\``)
-            })()`);
-    });
+Electron.ipcMain.handle("get-id3-lyric", async (event, songPath) => {
+    return await nodeId3.Promise.read(songPath);
 });
 Electron.ipcMain.on("set-id3-lyric", (event, songPath, lrcStr) => {
     nodeId3.update({

@@ -58,30 +58,66 @@ function playNow(songPath) {
     player.play();
     nxtLrcTs = null;
 
-    musicMetadata.parseFile(songPath).then((value) => {
+    function fillSongInfo(value) {
         document.getElementById("player_left_s_song").innerText
             = document.getElementById("lyric_left_m_t").innerText
-            = (value.common.title == undefined) ? songPath.substring(songPath.lastIndexOf("\\") + 1) : value.common.title;
+            = (() => {
+                if (songPath.startsWith("http")) {
+                    return value.title;
+                }
+                if (value.common.title == undefined) {
+                    return songPath.substring(songPath.lastIndexOf("\\") + 1);
+                }
+                return value.common.title;
+            })();
 
         document.getElementById("player_left_s_singer").innerText
             = document.getElementById("lyric_left_m_a").innerText
-            = (value.common.artist == undefined) ? "" : value.common.artist;
+            = (() => {
+                if (songPath.startsWith("http")) {
+                    return value.artist;
+                }
+                if (value.common.artist == undefined) {
+                    return "";
+                }
+                return value.common.artist;
+            })();
 
-        document.getElementById("player_left_s_pic").src
-            = document.getElementById("lyric_left_m_pic").src
-            = value.common.picture ? getIPictureBase64(value.common.picture[0]) : "../img/icon/music.svg";
+        if (songPath.startsWith("http")) {
+            getWebResourceBase64(value.picture).then(val => {
+                document.getElementById("player_left_s_pic").src
+                    = document.getElementById("lyric_left_m_pic").src
+                    = val;
+            });
+        }
+        else {
+            document.getElementById("player_left_s_pic").src
+                = document.getElementById("lyric_left_m_pic").src
+                = (() => {
+                    if (value.common.picture == undefined) {
+                        return "../img/icon/music.svg";
+                    }
+                    return getIPictureBase64(value.common.picture[0]);
+                })();
+        }
 
         Electron.ipcRenderer.send("playing-info",
             document.getElementById("player_left_s_song").innerText,
-            value.common.artist,
+            document.getElementById("player_left_s_singer").innerText,
             document.getElementById("lyric_left_m_pic").src
         );
-    });
+    };
+    if (songPath.startsWith("http")) {
+        document.getElementById("wbv").executeJavaScript(`webSongListInfo["${songPath}"]`).then(fillSongInfo);
+    }
+    else {
+        musicMetadata.parseFile(songPath).then(fillSongInfo);
+    }
 
-    Electron.ipcRenderer.send("get-id3-lyric", songPath, ((songPath, lyric) => {
+    function initLyrics(lyric) {
         document.getElementById("lyric_right_c").innerHTML = "";
         let synchronisedText;
-        if (lyric == "undefined") {
+        if (!lyric) {
             let lrcFilePath = songPath.substring(0, songPath.length - 4) + ".lrc";
             if (!fs.existsSync(lrcFilePath)) {
                 return;
@@ -89,7 +125,7 @@ function playNow(songPath) {
             synchronisedText = Electron.ipcRenderer.sendSync("lrc-to-synchronised-lyrics", fs.readFileSync(lrcFilePath).toString());
         }
         else {
-            synchronisedText = JSON.parse(lyric)[0].synchronisedText;
+            synchronisedText = lyric[0].synchronisedText;
         }
         synchronisedText.forEach((lrc) => {
             if (lrc.text == "") {
@@ -113,7 +149,23 @@ function playNow(songPath) {
             left: 0, top: 0,
             behavior: "instant"
         });
-    }).toString());
+    };
+    if (songPath.startsWith("http")) {
+        document.getElementById("wbv").executeJavaScript(`webSongListInfo["${songPath}"].lyric`).then(lyricUrl => {
+            fetch(lyricUrl, {
+                method: "GET"
+            }).then(response => {
+                return response.text();
+            }).then(lyricText => {
+                initLyrics([{
+                    "synchronisedText": Electron.ipcRenderer.sendSync("lrc-to-synchronised-lyrics", lyricText)
+                }]);
+            });
+        });
+    }
+    else {
+        Electron.ipcRenderer.invoke("get-id3-lyric", songPath).then(initLyrics);
+    }
 
     switchPlayingStatus(true);
 
@@ -498,6 +550,9 @@ Electron.ipcRenderer.on("out-control", (event, msg) => {
 function getCurrentSrc() {
     if (!playing || player.currentSrc == "") {
         return;
+    }
+    if (player.currentSrc.startsWith("http")) {
+        return player.currentSrc;
     }
     return decodeURI(player.currentSrc.split("file:///")[1].replaceAll("/", "\\"));
 };

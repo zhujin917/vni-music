@@ -7,34 +7,68 @@ let songListId = new URLSearchParams(location.search).get("id");
 let songListType = new URLSearchParams(location.search).get("type");
 let songListName = new URLSearchParams(location.search).get("name");
 let songListFileObject = new AppDataFile(`SongLists/${songListId}.json`);
-let songListStat = songListFileObject.statSync();
+let songListBirthTime = songListFileObject.statSync().birthtime;
+let songListContentLoaded = false;
+let sortMode = {
+    type: "default",
+    order: 0
+};
 let draggedDom = null;
 let infoLoaded = 0;
+let webSongListInfo = {};
 
 window.addEventListener("load", () => {
     document.getElementById("info_name").innerText = songListName;
-    document.getElementById("info_time").innerText = `创建时间：${songListStat.birthtime.toLocaleString()}`;
+    document.getElementById("info_time").innerText = `创建时间：${songListBirthTime.toLocaleString()}`;
     document.getElementById("info_id").innerText = `标识符：${songListId}`;
+
+    let songListFileContent;
+    if (songListFileObject.existsSync()) {
+        songListFileContent = songListFileObject.readObjectSync();
+    }
+    else {
+        if (songListType == "files") {
+            songListFileContent = songList;
+            songListFileObject.writeObjectSync(songList);
+        }
+        else return;
+    }
 
     switch (songListType) {
         case "files":
-            if (songListFileObject.existsSync()) {
-                songList = songListFileObject.readObjectSync();
-            }
-            else {
-                songListFileObject.writeObjectSync(songList);
-            }
+            songList = songListFileContent.songs;
             loadListContent();
             break;
         case "folder":
-            if (songListFileObject.existsSync()) {
-                getFilesInDir(songListFileObject.readObjectSync()).then((songPaths) => {
-                    songList = songPaths.filter((songPath) => allowedExtNames.includes(
-                        songPath.substring(songPath.lastIndexOf(".") + 1).toUpperCase()
-                    ));
-                    loadListContent();
+            getFilesInDir(songListFileContent.path).then((songPaths) => {
+                songList = songPaths.filter((songPath) => allowedExtNames.includes(
+                    songPath.substring(songPath.lastIndexOf(".") + 1).toUpperCase()
+                ));
+                loadListContent();
+            });
+            break;
+        case "web":
+            fetch(songListFileContent.url, {
+                method: "GET"
+            }).then(response => {
+                return response.json();
+            }).then(data => {
+                if (data.code != 200) {
+                    return;
+                }
+                songList = data.songs.map(song => {
+                    webSongListInfo[song.url] = {
+                        "title": song.title,
+                        "artist": song.artist,
+                        "album": song.album,
+                        "duration": song.duration,
+                        "picture": song.picture,
+                        "lyric": song.lyric
+                    };
+                    return song.url;
                 });
-            }
+                loadListContent();
+            });
             break;
     }
 });
@@ -78,7 +112,7 @@ function createListContentItem(index, songPath) {
                 click() {
                     Electron.ipcRenderer.sendToHost("add-selected", getSelectedSongPath());
                 }
-            }, {
+            }, ...((songListType == "web") ? [] : [{
                 type: "separator"
             }, {
                 label: "添加到歌单",
@@ -92,14 +126,14 @@ function createListContentItem(index, songPath) {
                             label: sl.name,
                             click() {
                                 if (sl.type == "folder") {
-                                    let outPath = new AppDataFile(`SongLists/${sl.id}.json`).readObjectSync();
+                                    let outPath = new AppDataFile(`SongLists/${sl.id}.json`).readObjectSync().path;
                                     getSelectedSongPath().forEach((srcPath) => {
                                         fs.promises.copyFile(srcPath, path.join(outPath, srcPath.substring(srcPath.lastIndexOf("\\") + 1)));
                                     })
                                 }
                                 else if (sl.type == "files") {
                                     let f = new AppDataFile(`SongLists/${sl.id}.json`);
-                                    let songs = f.readObjectSync();
+                                    let songs = f.readObjectSync().songs;
                                     songs = songs.concat(getSelectedSongPath());
                                     f.writeObjectSync(songs);
                                 }
@@ -113,7 +147,7 @@ function createListContentItem(index, songPath) {
                 click() {
                     Electron.ipcRenderer.send("mp3-modify", getSelectedSongPath());
                 }
-            }, ...((getSelectedSongPath().length == 1) ? [{
+            }]), ...((getSelectedSongPath().length == 1 && songListType != "web") ? [{
                 type: "separator"
             }, {
                 label: "文件",
@@ -147,10 +181,9 @@ function createListContentItem(index, songPath) {
                         click() {
                             Electron.clipboard.writeText(`"${getSelectedSongPath()[0]}"`);
                         }
-                    }
-                    // }, {
-                    //     label: "属性"
-                    // }
+                    }/*, {
+                        label: "属性"
+                    }*/
                 ]
             }] : [])
         ]).popup([evt.clientX, evt.clientY]);
@@ -218,7 +251,7 @@ function createListContentItem(index, songPath) {
     });
     document.getElementById("list_content").appendChild(s);
 
-    Electron.ipcRenderer.invoke("get-song-info", songPath).then((songInfo) => {
+    function fillSongInfo(songInfo) {
         let qsList = document.querySelectorAll(`div[data-songpath="${encodeURI(songPath)}"]`);
         for (let dom of qsList[qsList.length - 1].children) {
             if (dom.classList.contains("title")) {
@@ -236,19 +269,24 @@ function createListContentItem(index, songPath) {
         }
         infoLoaded += 1;
         if (infoLoaded == songList.length) {
-            showListContent();
+            setTimeout(showListContent, (songListType == "web") ? 500 : 1);
         }
-    });
+    };
+    if (songListType == "web") {
+        fillSongInfo(webSongListInfo[songPath]);
+    }
+    else {
+        Electron.ipcRenderer.invoke("get-song-info", songPath).then(fillSongInfo);
+    }
 };
 
 function showListContent() {
-    setTimeout(() => {
-        updateInfoPic().then(() => {
-            document.getElementById("list_loading").remove();
-            document.getElementById("list_content").style.display = "flex";
-            Electron.ipcRenderer.sendToHost("list-content-loaded");
-        });
-    }, 500);
+    updateInfoPic().then(() => {
+        songListContentLoaded = true;
+        document.getElementById("list_loading").remove();
+        document.getElementById("list_content").style.display = "flex";
+        Electron.ipcRenderer.sendToHost("list-content-loaded");
+    });
 };
 
 function saveSongList() {
@@ -294,6 +332,12 @@ function updateInfoPic() {
     return new Promise((resolve) => {
         if (songList.length == 0) {
             document.getElementById("info_pic").src = "../img/icon/music.svg";
+            resolve();
+        }
+        else if (songListType == "web") {
+            getWebResourceBase64(webSongListInfo[songList[0]].picture).then(val => {
+                document.getElementById("info_pic").src = val;
+            });
             resolve();
         }
         else {

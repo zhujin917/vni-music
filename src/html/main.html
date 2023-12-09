@@ -134,37 +134,6 @@
     </div>
     <!--内容窗-->
     <webview id="wbv" src="./home.html" webpreferences="nodeIntegration=yes, contextIsolation=no"></webview>
-    <!--新空白歌单-->
-    <div id="newSongList" class="ui-dialog">
-        <p class="ui-dialog-title">新空白歌单</p>
-        <input id="newSongList_name" class="ui-input" type="text" placeholder="歌单名称"
-            style="width: calc(280px - 24px);" /><br>
-        <p id="newSongList_err_empty" class="ui-dialog-tip" style="color: red; display: none;">歌单名称不能为空</p>
-        <div class="ui-dialog-btnbox">
-            <button class="ui-btn ui-dialog-btn" data-ui-dialog="close">取消</button>
-            <button class="ui-btn ui-dialog-btn ui-btn-colored" id="newSongList_ok">完成</button>
-        </div>
-    </div>
-    <!--重命名歌单-->
-    <div id="renSongList" class="ui-dialog">
-        <p class="ui-dialog-title">重命名歌单</p>
-        <input id="renSongList_name" class="ui-input" type="text" placeholder="歌单名称"
-            style="width: calc(280px - 24px);" /><br>
-        <p id="renSongList_err_empty" class="ui-dialog-tip" style="color: red; display: none;">歌单名称不能为空</p>
-        <div class="ui-dialog-btnbox">
-            <button class="ui-btn ui-dialog-btn" data-ui-dialog="close">取消</button>
-            <button class="ui-btn ui-dialog-btn ui-btn-colored" id="renSongList_ok">完成</button>
-        </div>
-    </div>
-    <!--删除歌单-->
-    <div id="delSongList" class="ui-dialog">
-        <p class="ui-dialog-title">确定要删除该歌单？</p>
-        <p class="ui-dialog-text">此操作无法恢复。</p>
-        <div class="ui-dialog-btnbox">
-            <button class="ui-btn ui-dialog-btn" data-ui-dialog="close">否</button>
-            <button class="ui-btn ui-dialog-btn ui-btn-colored" id="delSongList_ok">是</button>
-        </div>
-    </div>
     <!--Donate-->
     <div id="donate" class="ui-dialog">
         <p class="ui-dialog-title">捐助我们！</p>

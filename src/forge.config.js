@@ -5,7 +5,7 @@ module.exports = {
         "icon": "./img/logo.ico",
         "overwrite": true,
         "asar": true,
-        "appVersion": "0.4.1",
+        "appVersion": "0.4.2",
         "appCopyright": "版权所有 © 2023 维念软件。保留所有权利。",
         "ignore": [
             ".git",

@@ -63,6 +63,22 @@ function sec2str(sec) {
     return ret;
 };
 
+function getWebResourceBase64(url) {
+    return new Promise(resolve => {
+        fetch(url, {
+            method: "GET"
+        }).then(response => {
+            return response.blob();
+        }).then(blob => {
+            let reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => {
+                resolve(reader.result);
+            };
+        });
+    });
+};
+
 function getIPictureBase64(picture) {
     return `data:${picture.format};base64,${picture.data.toString("base64")}`;
 };

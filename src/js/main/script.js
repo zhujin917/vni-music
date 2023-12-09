@@ -7,10 +7,7 @@ window.addEventListener("load", () => {
             {
                 label: "空白歌单",
                 click() {
-                    ui.openDialog(document.getElementById("newSongList"));
-                    document.getElementById("newSongList_err_empty").style.display = "none";
-                    document.getElementById("newSongList_name").value = "";
-                    document.getElementById("newSongList_name").focus();
+                    ui.prompt("新空白歌单", "歌单名称", {}, addNewSongListCB);
                 }
             }, {
                 label: "从文件夹同步",
@@ -31,9 +28,58 @@ window.addEventListener("load", () => {
                         name: folderPath.substring(folderPath.lastIndexOf("\\") + 1)
                     });
                     saveSongListIndex();
-                    new AppDataFile(`SongLists/${newSongListId}.json`).writeObjectSync(folderPath);
+                    new AppDataFile(`SongLists/${newSongListId}.json`).writeObjectSync({
+                        type: "folder",
+                        path: folderPath,
+                        sort: {
+                            type: "default",
+                            order: 0
+                        }
+                    });
                     loadSonglistsMenu();
                     document.getElementById("menu_songlist_sl").lastChild.click();
+                }
+            }, {
+                label: "Web 歌单",
+                click() {
+                    ui.prompt("添加 Web 歌单", "远程链接", {
+                        width: 480,
+                        autoClose: false
+                    }, (value, dom) => {
+                        let waiting = ui.waiting();
+                        fetch(value, {
+                            method: "GET"
+                        }).then(response => {
+                            return response.json();
+                        }).then(data => {
+                            waiting.remove();
+                            if (data.vniMusicRemoteSongListApiFormatVersion != 1 || data.code != 200) {
+                                throw new Error();
+                            }
+                            let newSongListId = Math.floor(Math.random() * Math.pow(10, 8));
+                            songListIndex.push({
+                                id: newSongListId,
+                                type: "web",
+                                name: data.name
+                            });
+                            saveSongListIndex();
+                            new AppDataFile(`SongLists/${newSongListId}.json`).writeObjectSync({
+                                type: "web",
+                                url: value,
+                                sort: {
+                                    type: "default",
+                                    order: 0
+                                }
+                            });
+                            loadSonglistsMenu();
+                            document.getElementById("menu_songlist_sl").lastChild.click();
+                            ui.closeDialog(dom);
+                        }).catch(() => {
+                            waiting.remove();
+                            dom.querySelector(".ui-dialog-tip").innerText = "无效的远程链接";
+                            dom.querySelector(".ui-dialog-tip").style.display = "block";
+                        });
+                    });
                 }
             }
         ]).popup([evt.pageX, evt.pageY]);
@@ -71,3 +117,5 @@ function switchWbvTo(link, itemdom) {
     }
     document.getElementById("wbv").loadURL(path.join(__dirname, link));
 };
+
+fetch("https://xenon.3sqrt7.com/VniMusic/desktop/checkUpdate");

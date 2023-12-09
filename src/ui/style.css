@@ -65,3 +65,13 @@
     padding: 8px 12px;
     font-size: 17px;
 }
+
+.ui-waiting {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    cursor: wait;
+    z-index: 114515;
+}

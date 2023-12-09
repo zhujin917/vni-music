@@ -6,19 +6,19 @@ module.exports.createThumbarButtons = (mainWindowId, isSounding) => {
     return [
         {
             tooltip: "上一曲",
-            icon: nativeImage.createFromPath(path.join(__dirname, "../../img/icon/left-two.png")),
+            icon: nativeImage.createFromPath(path.join(__dirname, "../../img/icon/tb_previous.png")),
             click() {
                 mainWindow.webContents.send("out-control", "previous");
             }
         }, {
             tooltip: isSounding ? "暂停" : "播放",
-            icon: nativeImage.createFromPath(path.join(__dirname, isSounding ? "../../img/icon/pause-2.png" : "../../img/icon/play-one-1.png")),
+            icon: nativeImage.createFromPath(path.join(__dirname, isSounding ? "../../img/icon/tb_pause.png" : "../../img/icon/tb_play.png")),
             click() {
                 mainWindow.webContents.send("out-control", "play");
             }
         }, {
             tooltip: "下一曲",
-            icon: nativeImage.createFromPath(path.join(__dirname, "../../img/icon/right-two.png")),
+            icon: nativeImage.createFromPath(path.join(__dirname, "../../img/icon/tb_next.png")),
             click() {
                 mainWindow.webContents.send("out-control", "next");
             }

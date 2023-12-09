@@ -94,7 +94,7 @@ function createPlayListItem(index, songPath) {
     });
     document.getElementById("playlist_content").appendChild(d);
 
-    Electron.ipcRenderer.invoke("get-song-info", songPath).then((songInfo) => {
+    function fillSongInfo(songInfo) {
         let qsList = document.querySelectorAll(`div[data-songpath="${encodeURI(songPath)}"]`);
         for (let dom of qsList[qsList.length - 1].children) {
             if (dom.classList.contains("title")) {
@@ -110,5 +110,11 @@ function createPlayListItem(index, songPath) {
                 dom.innerText = sec2str(songInfo.duration);
             }
         }
-    });
+    };
+    if (songPath.startsWith("http")) {
+        document.getElementById("wbv").executeJavaScript(`webSongListInfo["${songPath}"]`).then(fillSongInfo);
+    }
+    else {
+        Electron.ipcRenderer.invoke("get-song-info", songPath).then(fillSongInfo);
+    }
 };
