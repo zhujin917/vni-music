@@ -63,6 +63,25 @@ function sec2str(sec) {
     return ret;
 };
 
+function formatSizeUnits(bytes) {
+    if (bytes >= 1073741824) {
+        return (bytes / 1073741824).toFixed(2) + " GB";
+    }
+    if (bytes >= 1048576) {
+        return (bytes / 1048576).toFixed(2) + " MB";
+    }
+    if (bytes >= 1024) {
+        return (bytes / 1024).toFixed(2) + " KB";
+    }
+    if (bytes > 1) {
+        return bytes + " 字节";
+    }
+    if (bytes == 1) {
+        return bytes + " 字节";
+    }
+    return "0 字节";
+};
+
 function getWebResourceBase64(url) {
     return new Promise(resolve => {
         fetch(url, {

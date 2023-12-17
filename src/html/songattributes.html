@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src *; img-src 'self' data: base64; style-src 'self' 'unsafe-inline'; script-src 'self';">
+    <link rel="stylesheet" type="text/css" href="../ui/style.css">
+    <script type="text/javascript" src="../ui/script.js"></script>
+    <title>属性</title>
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/window.css">
+    <link rel="stylesheet" type="text/css" href="../css/attributes.css">
+    <link rel="stylesheet" type="text/css" href="../css/songattributes/style.css">
+    <script type="text/javascript" src="../js/script.js"></script>
+    <script type="text/javascript" src="../js/window.js"></script>
+    <script type="text/javascript" src="../js/songattributes/script.js"></script>
+</head>
+
+<body>
+    <div id="titleBar">
+        <div id="titleBar_text">属性</div>
+        <div id="titleBar_buttons">
+            <button id="titleBar_buttons_minimize">&#xeaba;</button>
+            <button id="titleBar_buttons_close">&#xeab8;</button>
+        </div>
+    </div>
+    <div id="main">
+        <div class="top">
+            <img id="top_img">
+            <div id="top_text"></div>
+        </div>
+        <div class="title">基本</div>
+        <div class="group">
+            <div class="item">标题：<input readonly id="title"></div>
+            <div class="item">艺术家：<input readonly id="artist"></div>
+            <div class="item">专辑：<input readonly id="album"></div>
+            <div class="item">时长：<input readonly id="duration"></div>
+        </div>
+        <div class="title">歌词</div>
+        <div class="group">
+            <div class="item">
+                嵌入的：<input readonly id="lyric"><span id="clrLrc" class="link" hidden>清除</span>
+            </div>
+            <div class="item">
+                同名 .lrc 文件：<input readonly id="lrcFile"><span id="openLrc" class="link" hidden>打开</span>
+            </div>
+        </div>
+        <div class="title">文件</div>
+        <div class="group">
+            <div class="item">名称：<input readonly id="fname"></div>
+            <div class="item">
+                位置：<input readonly id="path"><span id="openPath" class="link">打开</span>
+            </div>
+            <div class="item">大小：<input readonly id="size"></div>
+            <div class="item">块大小：<input readonly id="blksize"></div>
+        </div>
+        <div class="title">关键时刻</div>
+        <div class="group">
+            <div class="item">创建时间：<input readonly id="birthtime"></div>
+            <div class="item">修改时间：<input readonly id="mtime"></div>
+            <div class="item">访问时间：<input readonly id="atime"></div>
+        </div>
+        <div class="title">高级</div>
+        <div class="group">
+            <div class="item">编码格式：<input readonly id="container"></div>
+            <div class="item">编解码器：<input readonly id="codec"></div>
+            <div class="item">编解码器配置：<input readonly id="codecProfile"></div>
+            <div class="item">存在的的标记格式：<input readonly id="tagTypes"></div>
+            <div class="item">比特率：<input readonly id="bitrate"></div>
+            <div class="item">采样率：<input readonly id="sampleRate"></div>
+            <div class="item">编码损失：<input readonly id="lossless"></div>
+            <div class="item">通道数：<input readonly id="numberOfChannels"></div>
+        </div>
+        <div class="end"></div>
+    </div>
+</body>
+
+</html>

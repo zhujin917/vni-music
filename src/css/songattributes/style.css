@@ -1,0 +1,10 @@
+#main #top_img {
+    /* height: 64px;
+    width: 64px; */
+    border: solid 1px #ccc;
+    border-radius: 2px;
+}
+
+#main .end {
+    height: 20px;
+}

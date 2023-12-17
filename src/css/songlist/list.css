@@ -3,10 +3,11 @@
     min-height: calc(100% - 200px);
     width: calc(100% - 4px - 10px);
     margin-left: 10px;
+    display: none;
 }
 #list_content {
     padding-bottom: 12px;
-    display: none;
+    display: flex;
 }
 
 #list_top {
@@ -77,18 +78,6 @@
     padding: 0 0 0 6px;
 }
 
-#list_loading {
-    text-align: center;
-}
-#list_loading .loading {
-    transform: scale(.64);
-    vertical-align: middle;
-}
-#list_loading span {
-    vertical-align: middle;
-    font-size: 15px;
-}
-
 #list_top .title:hover,
 #list_top .artist:hover,
 #list_top .album:hover {
@@ -106,4 +95,17 @@
     vertical-align: middle;
     transform: translateY(-1px);
     display: none;
+}
+
+#loading {
+    margin-top: 30px;
+    text-align: center;
+}
+#loading .loading {
+    transform: scale(.64);
+    vertical-align: middle;
+}
+#loading span {
+    vertical-align: middle;
+    font-size: 15px;
 }

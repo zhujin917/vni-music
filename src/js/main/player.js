@@ -71,7 +71,7 @@ function playNow(songPath) {
                 return value.common.title;
             })();
 
-        document.getElementById("player_left_s_singer").innerText
+        document.getElementById("player_left_s_artist").innerText
             = document.getElementById("lyric_left_m_a").innerText
             = (() => {
                 if (songPath.startsWith("http")) {
@@ -103,7 +103,7 @@ function playNow(songPath) {
 
         Electron.ipcRenderer.send("playing-info",
             document.getElementById("player_left_s_song").innerText,
-            document.getElementById("player_left_s_singer").innerText,
+            document.getElementById("player_left_s_artist").innerText,
             document.getElementById("lyric_left_m_pic").src
         );
     };

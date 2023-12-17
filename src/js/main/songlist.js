@@ -105,11 +105,15 @@ function createSonglistsMenuItem(index, sl) {
                         if (outPath == undefined) {
                             return;
                         }
-                        fs.writeFileSync(`${outPath}\\${targetSlDom.innerText}.json`, JSON.stringify({
-                            id: targetSlDom.getAttribute("data-sl-id"),
-                            name: targetSlDom.innerText,
-                            songs: readSongList(targetSlDom.getAttribute("data-sl-id"))
-                        }));
+                        songListIndex.forEach((sl) => {
+                            if (sl.id != targetSlDom.getAttribute("data-sl-id")) {
+                                return;
+                            }
+                            let content = new AppDataFile(`SongLists/${sl.id}.json`).readObjectSync();
+                            content["id"] = sl.id;
+                            content["name"] = sl.name;
+                            fs.writeFileSync(`${outPath}\\${sl.name}.json`, JSON.stringify(content));
+                        });
                         ui.alert("导出操作已完成。", `已完成对歌单「${targetSlDom.innerText}」的索引导出。`);
                     }
                 }, {
@@ -124,11 +128,10 @@ function createSonglistsMenuItem(index, sl) {
                             return;
                         }
                         songListIndex.forEach((sl) => {
-                            fs.writeFileSync(`${outPath}\\${sl.name}.json`, JSON.stringify({
-                                id: sl.id,
-                                name: sl.name,
-                                songs: readSongList(sl.id)
-                            }));
+                            let content = new AppDataFile(`SongLists/${sl.id}.json`).readObjectSync();
+                            content["id"] = sl.id;
+                            content["name"] = sl.name;
+                            fs.writeFileSync(`${outPath}\\${sl.name}.json`, JSON.stringify(content));
                         });
                         ui.alert("导出操作已完成。", "已完成对全部歌单的索引导出。");
                     }
@@ -148,11 +151,15 @@ function createSonglistsMenuItem(index, sl) {
                         ui.confirm("确定要删除该歌单？", "此操作无法恢复。", delSongListCB);
                     }
                 }]
-            }/*, {
+            }, {
                 type: "separator"
             }, {
-                label: "属性"
-            }*/
+                label: "属性",
+                click() {
+                    let targetSlDom = document.getElementById("menu_songlist_sl").children[songListContextMenuIndex];
+                    Electron.ipcRenderer.send("song-list-attributes", "song-list-id", targetSlDom.getAttribute("data-sl-id"));
+                }
+            }
         ]).popup([evt.clientX, evt.clientY]);
     });
     d.draggable = true;
@@ -173,16 +180,17 @@ function createSonglistsMenuItem(index, sl) {
                 }
                 songListIndex.push({
                     id: orginal.id,
+                    type: orginal.type,
                     name: orginal.name
                 });
-                new AppDataFile(`SongLists/${orginal.id}.json`).writeObjectSync({
-                    type: "files",
-                    songs: orginal.songs,
-                    sort: {
-                        type: "default",
-                        order: 0
+                let content = {};
+                for (let key of Object.keys(orginal)) {
+                    if (key == "id" || key == "name") {
+                        continue;
                     }
-                });
+                    content[key] = orginal[key];
+                }
+                new AppDataFile(`SongLists/${orginal.id}.json`).writeObjectSync(content);
             }
         }
         else if (songListDraggedDom) {

@@ -90,13 +90,13 @@
     font-size: 20px;
     font-weight: bolder;
 }
-#player_left_s_singer {
+#player_left_s_artist {
     position: absolute;
     left: 86px;
     top: 44px;
     font-size: 17px;
 }
-#player_left_s_song, #player_left_s_singer {
+#player_left_s_song, #player_left_s_artist {
     width: calc((100vw - 460px) / 2 - 86px);
     white-space: nowrap;
     overflow: hidden;

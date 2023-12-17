@@ -8,6 +8,7 @@ let songListType = new URLSearchParams(location.search).get("type");
 let songListName = new URLSearchParams(location.search).get("name");
 let songListFileObject = new AppDataFile(`SongLists/${songListId}.json`);
 let songListBirthTime = songListFileObject.statSync().birthtime;
+let songListUniqueData = {};
 let songListContentLoaded = false;
 let sortMode = {
     type: "default",
@@ -28,11 +29,12 @@ window.addEventListener("load", () => {
     }
     else {
         if (songListType == "files") {
-            songListFileContent = songList;
-            songListFileObject.writeObjectSync(songList);
+            songListFileContent = saveSongList();
         }
         else return;
     }
+
+    sortMode = songListFileContent.sort;
 
     switch (songListType) {
         case "files":
@@ -40,6 +42,7 @@ window.addEventListener("load", () => {
             loadListContent();
             break;
         case "folder":
+            songListUniqueData["path"] = songListFileContent.path;
             getFilesInDir(songListFileContent.path).then((songPaths) => {
                 songList = songPaths.filter((songPath) => allowedExtNames.includes(
                     songPath.substring(songPath.lastIndexOf(".") + 1).toUpperCase()
@@ -48,6 +51,7 @@ window.addEventListener("load", () => {
             });
             break;
         case "web":
+            songListUniqueData["url"] = songListFileContent.url;
             fetch(songListFileContent.url, {
                 method: "GET"
             }).then(response => {
@@ -119,23 +123,26 @@ function createListContentItem(index, songPath) {
                 submenu: (() => {
                     let result = [];
                     for (let sl of new AppDataFile("User/SongListIndex.json").readObjectSync()) {
-                        if (sl.id == songListId) {
+                        if (sl.id == songListId || sl.type == "web") {
                             continue;
                         }
                         result.push({
                             label: sl.name,
                             click() {
                                 if (sl.type == "folder") {
-                                    let outPath = new AppDataFile(`SongLists/${sl.id}.json`).readObjectSync().path;
-                                    getSelectedSongPath().forEach((srcPath) => {
-                                        fs.promises.copyFile(srcPath, path.join(outPath, srcPath.substring(srcPath.lastIndexOf("\\") + 1)));
-                                    })
+                                    Electron.ipcRenderer.send("copy-files", {
+                                        "id": songListId,
+                                        "name": songListName
+                                    }, getSelectedSongPath(), {
+                                        "id": sl.id,
+                                        "name": sl.name
+                                    }, new AppDataFile(`SongLists/${sl.id}.json`).readObjectSync().path);
                                 }
                                 else if (sl.type == "files") {
                                     let f = new AppDataFile(`SongLists/${sl.id}.json`);
-                                    let songs = f.readObjectSync().songs;
-                                    songs = songs.concat(getSelectedSongPath());
-                                    f.writeObjectSync(songs);
+                                    let content = f.readObjectSync();
+                                    content.songs = content.songs.concat(getSelectedSongPath());
+                                    f.writeObjectSync(content);
                                 }
                             }
                         });
@@ -181,9 +188,12 @@ function createListContentItem(index, songPath) {
                         click() {
                             Electron.clipboard.writeText(`"${getSelectedSongPath()[0]}"`);
                         }
-                    }/*, {
-                        label: "属性"
-                    }*/
+                    }, {
+                        label: "属性",
+                        click() {
+                            Electron.ipcRenderer.send("song-attributes", "song-path", getSelectedSongPath()[0]);
+                        }
+                    }
                 ]
             }] : [])
         ]).popup([evt.clientX, evt.clientY]);
@@ -192,7 +202,7 @@ function createListContentItem(index, songPath) {
         this.classList.remove("item-focused");
         Electron.ipcRenderer.sendToHost("play-dblclick", songList, decodeURI(this.getAttribute("data-songpath")));
     });
-    s.draggable = (songListType == "files");
+    s.draggable = (sortMode.order == 0 && songListType == "files");
     bindDragEventsForListItemDom(s, {
         focusable: true,
         indexAttr: "data-songnum"
@@ -206,20 +216,29 @@ function createListContentItem(index, songPath) {
             return;
         }
         let count = (ev.offsetY < this.offsetHeight / 2) ? 0 : 1;
-        if (ev.dataTransfer.files.length > 0) {
-            for (let file of ev.dataTransfer.files) {
-                if (!allowedExtNames.includes(file.name.substring(file.name.lastIndexOf(".") + 1).toUpperCase())) {
-                    continue;
-                }
-                if (songList.indexOf(file.path) != -1) {
-                    if (ev.dataTransfer.files.length == 1) {
-                        Electron.ipcRenderer.sendToHost("alert", "提示", "该歌曲已存在于此歌单中。");
+        if (ev.dataTransfer.files.length > 0 && checkIfCanEdit()) {
+            if (songListType == "files") {
+                for (let file of ev.dataTransfer.files) {
+                    if (!allowedExtNames.includes(file.name.substring(file.name.lastIndexOf(".") + 1).toUpperCase())) {
+                        continue;
                     }
-                    continue;
+                    if (songList.indexOf(file.path) != -1) {
+                        if (ev.dataTransfer.files.length == 1) {
+                            Electron.ipcRenderer.sendToHost("alert", "提示", "该歌曲已存在于此歌单中。");
+                        }
+                        continue;
+                    }
+                    songList.splice(Number(this.getAttribute("data-songnum")) + count, 0, file.path);
+                    count += 1;
+                };
+            }
+            else if (songListType == "folder") {
+                let srcFileList = [];
+                for (let file of ev.dataTransfer.files) {
+                    srcFileList.push(file.path);
                 }
-                songList.splice(Number(this.getAttribute("data-songnum")) + count, 0, file.path);
-                count += 1;
-            };
+                Electron.ipcRenderer.send("copy-files", path.dirname(srcFileList[0]), srcFileList, songListUniqueData.path, songListUniqueData.path);
+            }
         }
         else if (draggedDom != null) {
             let focusedSong = [];
@@ -247,6 +266,7 @@ function createListContentItem(index, songPath) {
             songList = songList.filter(item => item !== null);
         }
         draggedDom = null;
+        unsortedSongList = [...songList];
         saveSongList();
     });
     document.getElementById("list_content").appendChild(s);
@@ -269,7 +289,7 @@ function createListContentItem(index, songPath) {
         }
         infoLoaded += 1;
         if (infoLoaded == songList.length) {
-            setTimeout(showListContent, (songListType == "web") ? 500 : 1);
+            setTimeout(showListContent, (songListType == "web") ? 1 : 500);
         }
     };
     if (songListType == "web") {
@@ -281,23 +301,38 @@ function createListContentItem(index, songPath) {
 };
 
 function showListContent() {
-    updateInfoPic().then(() => {
+    refreshSongList().then(() => {
+        if (songListContentLoaded) {
+            return;
+        }
         songListContentLoaded = true;
-        document.getElementById("list_loading").remove();
-        document.getElementById("list_content").style.display = "flex";
+        document.getElementById("loading").remove();
+        document.getElementById("list").style.display = "block";
         Electron.ipcRenderer.sendToHost("list-content-loaded");
     });
 };
 
 function saveSongList() {
-    if (songListType != "files") {
-        return;
+    let content = {};
+    content["type"] = songListType;
+    if (songListType == "files") {
+        content["songs"] = unsortedSongList ? unsortedSongList : songList;
     }
-    songListFileObject.writeObjectSync(songList);
-    sortSongList();
+    else {
+        for (let key of Object.keys(songListUniqueData)) {
+            content[key] = songListUniqueData[key];
+        }
+    }
+    content["sort"] = sortMode;
+
+    songListFileObject.writeObjectSync(content);
+    refreshSongList();
+
+    return content;
 };
 
-function sortSongList() {
+function refreshSongList() {
+    sortSongList();
     let elemList = document.getElementById("list_content").getElementsByClassName("item");
     for (let i = 0; i < elemList.length; i += 1) {
         let elem = elemList[i];
@@ -320,12 +355,13 @@ function sortSongList() {
             }
             itemDom.style.order = i;
             itemDom.setAttribute("data-songnum", i);
+            itemDom.draggable = (sortMode.order == 0 && songListType == "files");
         }
         else {
             createListContentItem(i, songPath);
         }
     });
-    updateInfoPic();
+    return updateInfoPic();
 };
 
 function updateInfoPic() {
@@ -345,16 +381,13 @@ function updateInfoPic() {
                 if (value.common.picture) {
                     document.getElementById("info_pic").src = getIPictureBase64(value.common.picture[0]);
                 }
+                else {
+                    document.getElementById("info_pic").src = "../img/icon/music.svg";
+                }
                 resolve();
             });
         }
     });
-};
-
-function setDraggable(draggable) {
-    for (let elem of document.getElementById("list_content").getElementsByClassName("item")) {
-        elem.draggable = draggable;
-    }
 };
 
 let contextMenuDom = null;
@@ -371,20 +404,44 @@ function getSelectedSongPath() {
     return songsl;
 };
 
+function checkIfCanEdit() {
+    if (songListType == "web") {
+        Electron.ipcRenderer.sendToHost("alert", "提示", "无法编辑 Web 歌单。");
+        return false;
+    }
+    if (sortMode.order != 0) {
+        Electron.ipcRenderer.sendToHost("alert", "提示", "无法在排序模式下编辑歌单。");
+        return false;
+    }
+    return true;
+};
+
 window.addEventListener("load", () => {
     document.getElementById("list").addEventListener("dragover", (ev) => {
         ev.preventDefault();
     });
     document.getElementById("list").addEventListener("drop", (ev) => {
-        let count = 0;
-        for (let file of ev.dataTransfer.files) {
-            if (!allowedExtNames.includes(file.name.substring(file.name.lastIndexOf(".") + 1).toUpperCase())) {
-                continue;
-            }
-            songList.splice(document.getElementById("list_content").children.length + count, 0, file.path);
-            count += 1;
+        if (!checkIfCanEdit()) {
+            return;
         }
-        saveSongList();
+        if (songListType == "files") {
+            let count = 0;
+            for (let file of ev.dataTransfer.files) {
+                if (!allowedExtNames.includes(file.name.substring(file.name.lastIndexOf(".") + 1).toUpperCase())) {
+                    continue;
+                }
+                songList.splice(document.getElementById("list_content").children.length + count, 0, file.path);
+                count += 1;
+            }
+            saveSongList();
+        }
+        else if (songListType == "folder") {
+            let srcFileList = [];
+            for (let file of ev.dataTransfer.files) {
+                srcFileList.push(file.path);
+            }
+            Electron.ipcRenderer.send("copy-files", path.dirname(srcFileList[0]), srcFileList, songListUniqueData.path, songListUniqueData.path);
+        }
     });
 
     document.getElementById("info_btns_play").addEventListener("click", () => {

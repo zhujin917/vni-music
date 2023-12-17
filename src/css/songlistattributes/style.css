@@ -1,0 +1,6 @@
+#main #dirname {
+    width: calc(100% - 80px);
+}
+#main #openSrc {
+    display: none;
+}

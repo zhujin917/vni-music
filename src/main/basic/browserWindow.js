@@ -112,6 +112,54 @@ let create = {
         });
         trayWindow.loadURL(path.join(__dirname, "../../html/tray.html"));
         return trayWindow;
+    },
+
+    copyFiles() {
+        let copyFilesWindow = new BrowserWindow({
+            width: 480,
+            height: 180,
+            frame: false,
+            resizable: false,
+            show: false,
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false
+            }
+        });
+        copyFilesWindow.loadURL(path.join(__dirname, "../../html/copyfiles.html"));
+        return copyFilesWindow;
+    },
+
+    songListAttributes() {
+        let songListAttributesWindow = new BrowserWindow({
+            width: 400,
+            height: 600,
+            frame: false,
+            resizable: false,
+            show: false,
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false
+            }
+        });
+        songListAttributesWindow.loadURL(path.join(__dirname, "../../html/songlistattributes.html"));
+        return songListAttributesWindow;
+    },
+
+    songAttributes() {
+        let songAttributesWindow = new BrowserWindow({
+            width: 400,
+            height: 600,
+            frame: false,
+            resizable: false,
+            show: false,
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false
+            }
+        });
+        songAttributesWindow.loadURL(path.join(__dirname, "../../html/songattributes.html"));
+        return songAttributesWindow;
     }
 };
 

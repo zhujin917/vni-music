@@ -118,4 +118,9 @@ function switchWbvTo(link, itemdom) {
     document.getElementById("wbv").loadURL(path.join(__dirname, link));
 };
 
+Electron.ipcRenderer.on("show-song-list", (event, songListId) => {
+    Electron.ipcRenderer.send("window-role", "show");
+    document.getElementById("menu_songlist_sl").querySelector(`div[data-sl-id="${songListId}"]`).click();
+});
+
 fetch("https://xenon.3sqrt7.com/VniMusic/desktop/checkUpdate");

@@ -1,7 +1,7 @@
 const path = require("path");
 const Electron = require("electron");
 
-const { createBrowserWindow } = require("./basic/browserWindow");
+const { createBrowserWindow } = require("./basic/browserWindow.js");
 const { createThumbarButtons } = require("./basic/thumbarButtons.js");
 
 const { getSongInfo } = require("./function/getSongInfo.js");
@@ -64,16 +64,14 @@ Electron.ipcMain.on("show-open-dialog-sync", (event, options) => {
 Electron.ipcMain.on("show-save-dialog-sync", (event, options) => {
     event.returnValue = Electron.dialog.showSaveDialogSync(options);
 });
+Electron.ipcMain.handle("get-file-icon", async (event, filePath, options) => {
+    return await Electron.app.getFileIcon(filePath, options);
+});
+Electron.ipcMain.on("send-to-main-window", (event, channel, ...args) => {
+    mainWindow.webContents.send(channel, ...args);
+});
 Electron.ipcMain.on("window-role", (event, role) => {
-    let win = Electron.BrowserWindow.fromWebContents(event.sender);
-    switch (role) {
-        case "close":
-            win.close();
-            break;
-        case "minimize":
-            win.minimize();
-            break;
-    }
+    Electron.BrowserWindow.fromWebContents(event.sender)[role]();
 });
 
 // Song API
@@ -87,7 +85,7 @@ Electron.ipcMain.handle("get-song-info", async (event, songPath) => {
 
 // Lyric API
 Electron.ipcMain.handle("get-id3-lyric", async (event, songPath) => {
-    return await nodeId3.Promise.read(songPath);
+    return (await nodeId3.Promise.read(songPath)).synchronisedLyrics;
 });
 Electron.ipcMain.on("set-id3-lyric", (event, songPath, lrcStr) => {
     nodeId3.update({
@@ -225,6 +223,37 @@ Electron.ipcMain.on("lyric-update", (event, lrcTxt) => {
         return;
     }
     lyricWindow.webContents.send("lyric-update", lrcTxt);
+});
+
+Electron.ipcMain.on("copy-files", (event, ...args) => {
+    let copyFilesWindow = createBrowserWindow("copyFiles");
+    copyFilesWindow.on("ready-to-show", () => {
+        copyFilesWindow.show();
+        copyFilesWindow.webContents.send("start-copy", ...args);
+        // copyFilesWindow.openDevTools({ mode: "undocked" });
+    });
+    copyFilesWindow.on("close", (event) => {
+        event.preventDefault();
+        copyFilesWindow.webContents.send("close");
+    });
+});
+
+Electron.ipcMain.on("song-list-attributes", (event, ...args) => {
+    let songListAttributesWindow = createBrowserWindow("songListAttributes");
+    songListAttributesWindow.on("ready-to-show", () => {
+        songListAttributesWindow.show();
+        songListAttributesWindow.webContents.send(...args);
+        // songListAttributesWindow.openDevTools({ mode: "undocked" });
+    });
+});
+
+Electron.ipcMain.on("song-attributes", (event, ...args) => {
+    let songAttributesWindow = createBrowserWindow("songAttributes");
+    songAttributesWindow.on("ready-to-show", () => {
+        songAttributesWindow.show();
+        songAttributesWindow.webContents.send(...args);
+        // songAttributesWindow.openDevTools({ mode: "undocked" });
+    });
 });
 
 Electron.ipcMain.on("mp3-modify", (event, songs) => {

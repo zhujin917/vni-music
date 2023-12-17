@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src *; img-src 'self' data: base64; style-src 'self' 'unsafe-inline'; script-src 'self';">
+    <link rel="stylesheet" type="text/css" href="../ui/style.css">
+    <script type="text/javascript" src="../ui/script.js"></script>
+    <title>复制</title>
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <link rel="stylesheet" type="text/css" href="../css/window.css">
+    <link rel="stylesheet" type="text/css" href="../css/copyfiles/style.css">
+    <script type="text/javascript" src="../js/script.js"></script>
+    <script type="text/javascript" src="../js/window.js"></script>
+    <script type="text/javascript" src="../js/copyfiles/script.js"></script>
+</head>
+
+<body>
+    <div id="titleBar">
+        <div id="titleBar_text">复制</div>
+        <div id="titleBar_buttons">
+            <button id="titleBar_buttons_minimize">&#xeaba;</button>
+            <button id="titleBar_buttons_close">&#xeab8;</button>
+        </div>
+    </div>
+    <div id="main">
+        <div id="title">正在计算...</div>
+        <div class="subtitle">
+            正在将 <span id="subtitle_sum"></span>
+            首歌曲从 <span id="subtitle_from"></span>
+            复制到 <span id="subtitle_to"></span>
+        </div>
+        <div class="progress">
+            <div id="progress_bar"></div>
+        </div>
+        <div id="details">
+            名称：<span id="details_name"></span><br>
+            剩余歌曲：<span id="details_items"></span>
+        </div>
+        <button id="cancel" class="ui-btn">取消</button>
+    </div>
+</body>
+
+</html>
